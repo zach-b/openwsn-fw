@@ -1725,7 +1725,9 @@ port_INLINE void joinPriorityStoreFromAdv(uint8_t jp){
 
 
 port_INLINE void asnStoreFromAdv(uint8_t* asn) {
-   
+   uint16_t frameLength;
+   uint16_t tmp;
+    
    // store the ASN
    ieee154e_vars.asn.bytes0and1   =     asn[0]+
                                     256*asn[1];
@@ -1738,7 +1740,16 @@ port_INLINE void asnStoreFromAdv(uint8_t* asn) {
    Note: this is a bit of a hack. Normally, slotOffset=ASN%slotlength. But since
    the ADV is exchanged in slot 0, we know that we're currently at slotOffset==0
    */
-   ieee154e_vars.slotOffset       = 0;
+   
+   frameLength = schedule_getFrameLength();
+   tmp = 0;
+   tmp = (256*tmp+asn[4])%frameLength;
+   tmp = (256*tmp+asn[3])%frameLength;
+   tmp = (256*tmp+asn[2])%frameLength;
+   tmp = (256*tmp+asn[1])%frameLength;
+   tmp = (256*tmp+asn[0])%frameLength;
+       
+   ieee154e_vars.slotOffset       = tmp;
    schedule_syncSlotOffset(ieee154e_vars.slotOffset);
    ieee154e_vars.nextActiveSlotOffset = schedule_getNextActiveSlotOffset();
    
@@ -1857,6 +1868,17 @@ void changeIsSync(bool newIsSync) {
 //======= notifying upper layer
 
 void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
+   uint8_t temp[8];
+   // tengfei: statistic
+   memcpy(&temp,&ieee154e_vars.asn,sizeof(asn_t));
+   memcpy(&temp[sizeof(asn_t)],&ieee154e_vars.slotOffset,sizeof(slotOffset_t));
+   temp[7] = ieee154e_vars.freq;
+   openserial_printStatus(
+      12,
+      (uint8_t*)&temp,
+      sizeof(asn_t)+sizeof(slotOffset_t)+sizeof(channelOffset_t)
+   ); 
+    
    // record the outcome of the trasmission attempt
    packetSent->l2_sendDoneError   = error;
    // record the current ASN
@@ -1871,10 +1893,21 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
 }
 
 void notif_receive(OpenQueueEntry_t* packetReceived) {
+   uint8_t temp[8];
    // record the current ASN
    memcpy(&packetReceived->l2_asn, &ieee154e_vars.asn, sizeof(asn_t));
    // indicate reception to the schedule, to keep statistics
    schedule_indicateRx(&packetReceived->l2_asn);
+   // tengfei: statistic
+   memcpy(&temp,&ieee154e_vars.asn,sizeof(asn_t));
+   memcpy(&temp[sizeof(asn_t)],&ieee154e_vars.slotOffset,sizeof(slotOffset_t));
+   temp[7] = ieee154e_vars.freq;
+   openserial_printStatus(
+      12,
+      (uint8_t*)&temp,
+      sizeof(asn_t)+sizeof(slotOffset_t)+sizeof(channelOffset_t)
+   );
+   
    // associate this packet with the virtual component
    // COMPONENT_IEEE802154E_TO_SIXTOP so sixtop can knows it's for it
    packetReceived->owner          = COMPONENT_IEEE802154E_TO_SIXTOP;
@@ -1930,8 +1963,8 @@ different channel offsets in the same slot.
 */
 port_INLINE uint8_t calculateFrequency(uint8_t channelOffset) {
    // comment the following line out to disable channel hopping
-   return SYNCHRONIZING_CHANNEL; // single channel
-   //return 11+(ieee154e_vars.asnOffset+channelOffset)%16; //channel hopping
+//   return SYNCHRONIZING_CHANNEL; // single channel
+   return 11+(ieee154e_vars.asnOffset+channelOffset)%16; //channel hopping
 }
 
 /**

@@ -605,16 +605,18 @@ void timer_sixtop_management_fired(void) {
    
    switch (sixtop_vars.mgtTaskCounter) {
       case 0:
-         // called every ADVTIMEOUT seconds
-         sixtop_sendEB();
+         if(idmanager_getIsDAGroot() == TRUE) {
+             // called every ADVTIMEOUT seconds
+             sixtop_sendEB();
+         }
          break;
       case 1:
          // called every ADVTIMEOUT seconds
-         neighbors_removeOld();
+//         neighbors_removeOld();
          break;
       default:
          // called every second, except twice every ADVTIMEOUT seconds
-         sixtop_sendKA();
+//         sixtop_sendKA();
          break;
    }
 }
