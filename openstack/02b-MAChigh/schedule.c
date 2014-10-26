@@ -581,7 +581,7 @@ void schedule_indicateRx(asn_t* asnTimestamp) {
    
    // increment usage statistics
    schedule_vars.currentScheduleEntry->numRx++;
-   
+
    // update last used timestamp
    memcpy(&(schedule_vars.currentScheduleEntry->lastUsedAsn), asnTimestamp, sizeof(asn_t));
    

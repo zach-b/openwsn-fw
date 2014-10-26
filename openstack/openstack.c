@@ -63,24 +63,24 @@ void openstack_init(void) {
    sixtop_init();
    neighbors_init();
    //-- 03a-IPHC
-//   openbridge_init();
-//   iphc_init();
-//   //-- 03b-IPv6
-//   forwarding_init();
-//   icmpv6_init();
-//   icmpv6echo_init();
-//   icmpv6rpl_init();
-//   //-- 04-TRAN
-//   opentcp_init();
-//   openudp_init();
-//   opencoap_init();     // initialize before any of the CoAP applications
-//   
-//   //===== applications
-//   openapps_init();
-//   
-//   openserial_printInfo(
-//      COMPONENT_OPENWSN,ERR_BOOTED,
-//      (errorparameter_t)0,
-//      (errorparameter_t)0
-//   );
+   openbridge_init();
+   iphc_init();
+   //-- 03b-IPv6
+   forwarding_init();
+   icmpv6_init();
+   icmpv6echo_init();
+   icmpv6rpl_init();
+   //-- 04-TRAN
+   opentcp_init();
+   openudp_init();
+   opencoap_init();     // initialize before any of the CoAP applications
+   
+   //===== applications
+   openapps_init();
+   
+   openserial_printInfo(
+      COMPONENT_OPENWSN,ERR_BOOTED,
+      (errorparameter_t)0,
+      (errorparameter_t)0
+   );
 }
