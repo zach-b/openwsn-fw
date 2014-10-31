@@ -317,6 +317,34 @@ void sixtop_removeCell(open_addr_t* neighbor){
    opentimers_restart(sixtop_vars.timeoutTimerId);
 }
 
+bool sixtop_isBlacklisted(uint16_t tsNum, uint16_t choffset, sixtop_blacklist_type_t type) {
+    uint8_t i,j;
+    bool state = FALSE;
+    swtich(type) {
+    case B_TX:
+        for(i=0;i<MAXBLACKLISTLENGTH;i++) {
+            if(sixtop_blacklist_vars.blacklistTx[i].slotoffset == tsNum    &&
+               sixtop_blacklist_vars.blacklistTx[i].channeloffset == choffset) {
+                  state = TRUE;
+                  break;
+            }
+        }
+        break;
+    case B_RX:
+        for(i=0;i<MAXBLACKLISTLENGTH;i++) {
+            if(sixtop_blacklist_vars.blacklistRx[i].slotoffset == tsNum    &&
+               sixtop_blacklist_vars.blacklistRx[i].channeloffset == choffset) {
+                  state = TRUE;
+                  break;
+            }
+        }
+        break;
+    default: 
+        // something wrong
+    }
+    return state;
+}
+
 //======= from upper layer
 
 owerror_t sixtop_send(OpenQueueEntry_t *msg) {
@@ -1143,7 +1171,8 @@ bool sixtop_candidateAddCellList(
       uint8_t*     flag,
       cellInfo_ht* cellList
    ){
-   uint8_t i;
+   uint16_t i;
+   uint8_t j;
    uint8_t numCandCells;
    
    *type = 1;
@@ -1151,15 +1180,19 @@ bool sixtop_candidateAddCellList(
    *flag = 1; // the cells listed in cellList are available to be schedule.
    
    numCandCells=0;
-   for(i=0;i<MAXACTIVESLOTS;i++){
+   for(i=0;i<SUPERFRAME_LENGTH;i++){
       if(schedule_isSlotOffsetAvailable(i)==TRUE){
-         cellList[numCandCells].tsNum       = i;
-         cellList[numCandCells].choffset    = 0;
-         cellList[numCandCells].linkoptions = CELLTYPE_TX;
-         numCandCells++;
-         if(numCandCells==SCHEDULEIEMAXNUMCELLS){
-            break;
-         }
+          for(j=0; j<16; j++) {
+              if(sixtop_isBlacklisted(i,j,B_TX) == FALSE) {
+                  cellList[numCandCells].tsNum       = i;
+                  cellList[numCandCells].choffset    = j;
+                  cellList[numCandCells].linkoptions = CELLTYPE_TX;
+                  numCandCells++;
+                  if(numCandCells==SCHEDULEIEMAXNUMCELLS){
+                      break;
+                  }
+              }
+          }
       }
    }
    
@@ -1283,6 +1316,7 @@ bool sixtop_areAvailableCellsToBeScheduled(
       uint8_t      bandwidth
    ){
    uint8_t i;
+   uint8_t j;
    uint8_t bw;
    bool    available;
    
@@ -1296,8 +1330,9 @@ bool sixtop_areAvailableCellsToBeScheduled(
       available = FALSE;
    } else {
       do {
-         if(schedule_isSlotOffsetAvailable(cellList[i].tsNum) == TRUE){
-            bw--;
+         if(schedule_isSlotOffsetAvailable(cellList[i].tsNum) == TRUE                  && 
+            sixtop_isBlacklisted(cellList[i].tsNum, cellList[i].choffset, B_RX) == FALSE){
+                bw--;
          } else {
             cellList[i].linkoptions = CELLTYPE_OFF;
          }

@@ -82,6 +82,7 @@ void      sixtop_setKaPeriod(uint16_t kaPeriod);
 // scheduling
 void      sixtop_addCells(open_addr_t* neighbor, uint16_t numCells);
 void      sixtop_removeCell(open_addr_t*  neighbor);
+bool      sixtop_isBlacklisted(uint16_t tsNum, uint16_t choffset, sixtop_blacklist_type_t type);
 // from upper layer
 owerror_t sixtop_send(OpenQueueEntry_t *msg);
 // from lower layer
