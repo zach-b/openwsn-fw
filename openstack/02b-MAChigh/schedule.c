@@ -400,6 +400,10 @@ bool schedule_isSlotOffsetAvailable(uint16_t slotOffset){
    return TRUE;
 }
 
+scheduleEntry_t*   schedule_getCurrentScheduleEntry(void) {
+    return schedule_vars.currentScheduleEntry;
+}
+
 //=== from IEEE802154E: reading the schedule and updating statistics
 
 void schedule_syncSlotOffset(slotOffset_t targetSlotOffset) {

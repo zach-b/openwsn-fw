@@ -37,10 +37,16 @@ typedef enum {
    // REMOVE: destinations
    SIX_REMOVEREQUEST_RECEIVED          = 0x0a    // I received the remove link request command
 } six2six_state_t;
+       
+typedef enum {
+   B_TX = 0x00,
+   B_RX = 0x01,
+} sixtop_blacklist_type_t;
 
 //=========================== typedef =========================================
 
 #define SIX2SIX_TIMEOUT_MS 2000
+#define MAXBLACKLISTLENGTH 20
 
 //=========================== module variables ================================
 
@@ -56,6 +62,17 @@ typedef struct {
    six2six_state_t      six2six_state;
    uint8_t              commandID;
 } sixtop_vars_t;
+
+typedef struct {
+    bool used;
+    uint16_t slotoffset;    // slotoffset of cell which can't be used
+    uint8_t channeloffset;  // channeloffset of cell wihch can't be used, if value=0xff, all channels (11~26) can'e be used
+} sixtop_blacklist_element_vars_t;
+
+typedef struct {
+    sixtop_blacklist_element_vars_t blacklistTx[MAXBLACKLISTLENGTH];
+    sixtop_blacklist_element_vars_t blacklistRx[MAXBLACKLISTLENGTH];
+} sixtop_blacklist_vars_t;
 
 //=========================== prototypes ======================================
 
@@ -73,6 +90,8 @@ void      task_sixtopNotifReceive(void);
 // debugging
 bool      debugPrint_myDAGrank(void);
 bool      debugPrint_kaPeriod(void);
+// sixtop blacklist
+void      sixtop_markBlacklist(uint16_t slotOffset, uint16_t channelOffset, sixtop_blacklist_type_t type);
 
 /**
 \}

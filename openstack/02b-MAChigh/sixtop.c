@@ -20,6 +20,7 @@
 //=========================== variables =======================================
 
 sixtop_vars_t sixtop_vars;
+sixtop_blacklist_vars_t sixtop_blacklist_vars;
 
 //=========================== prototypes ======================================
 
@@ -113,6 +114,8 @@ bool          sixtop_areAvailableCellsToBeScheduled(
    uint8_t              bandwidth
 );
 
+bool          sixtop_insertToBlacklist(sixtop_blacklist_element_vars_t* element,sixtop_blacklist_type_t type);
+
 //=========================== public ==========================================
 
 void sixtop_init() {
@@ -137,6 +140,8 @@ void sixtop_init() {
       TIME_MS,
       sixtop_timeout_timer_cb
    );
+   // initial sixtop cell blacklist
+   memset(&sixtop_blacklist_vars,0,sizeof(sixtop_blacklist_vars_t));
 }
 
 void sixtop_setKaPeriod(uint16_t kaPeriod) {
@@ -1314,4 +1319,49 @@ bool sixtop_areAvailableCellsToBeScheduled(
    }
    
    return available;
+}
+
+bool sixtop_insertToBlacklist(sixtop_blacklist_element_vars_t* element, sixtop_blacklist_type_t type) {
+    uint16_t i;
+    bool state = FALSE;
+    if (type == B_TX) {
+        for(i=0;i<MAXBLACKLISTLENGTH;i++) {
+            if(sixtop_blacklist_vars.blacklistTx[i].used == FALSE) {
+                sixtop_blacklist_vars.blacklistTx[i].used          = TRUE;
+                sixtop_blacklist_vars.blacklistTx[i].slotoffset    = element->slotoffset;
+                sixtop_blacklist_vars.blacklistTx[i].channeloffset = element->channeloffset;
+                state = TRUE;
+                break;
+            }
+        }
+    } else {
+        if (type == B_RX) {
+            for(i=0;i<MAXBLACKLISTLENGTH;i++) {
+                if(sixtop_blacklist_vars.blacklistRx[i].used == FALSE) {
+                    sixtop_blacklist_vars.blacklistRx[i].used          = TRUE;
+                    sixtop_blacklist_vars.blacklistRx[i].slotoffset    = element->slotoffset;
+                    sixtop_blacklist_vars.blacklistRx[i].channeloffset = element->channeloffset;
+                    state = TRUE;
+                    break;
+                }
+            }
+        } else {
+            // never should be here
+            leds_error_blink();
+        }
+    }
+    
+    return state;
+}
+
+
+// sixtop blacklist
+void sixtop_markBlacklist(uint16_t slotOffset, uint16_t channelOffset, sixtop_blacklist_type_t type) {
+    sixtop_blacklist_element_vars_t element;
+    element.slotoffset = slotOffset;
+    element.channeloffset = channelOffset & 0xFF;
+    if(sixtop_insertToBlacklist(&element,type) == FALSE) {
+        // print blacklist overflow error
+        leds_error_blink();
+    }
 }

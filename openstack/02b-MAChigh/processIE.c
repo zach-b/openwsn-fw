@@ -90,11 +90,61 @@ port_INLINE uint8_t processIE_prependSlotframeLinkIE(OpenQueueEntry_t* pkt){
    uint8_t    len;
    uint8_t    linkOption;
    uint16_t   slot;
+   scheduleEntry_t* start;
+   scheduleEntry_t* temp;
+   uint8_t    i;
   
    len        = 0;
-   linkOption = 0;
+   linkOption = 0;   
    slot       = SCHEDULE_MINIMAL_6TISCH_ACTIVE_CELLS+\
                 SCHEDULE_MINIMAL_6TISCH_EB_CELLS;
+   
+   // add cells not belonging to minimal6tisch draft
+   start = schedule_getCurrentScheduleEntry();
+   temp = start;
+   do {
+       if(temp->type == CELLTYPE_TX || temp->type == CELLTYPE_RX || temp->type == CELLTYPE_TXRX) {
+           switch(temp->type) {
+           case CELLTYPE_TX:
+               linkOption = 1<<FLAG_TX_S;
+               packetfunctions_reserveHeaderSize(pkt,5);
+               pkt->payload[0]   =  temp->slotOffset       & 0xFF;
+               pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
+               pkt->payload[2]   = temp->channelOffset;// channel offset
+               pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
+               pkt->payload[4]   = linkOption;         // linkOption
+               len+=5;
+               break;
+           case CELLTYPE_RX:
+               linkOption = 1<<FLAG_RX_S;
+               packetfunctions_reserveHeaderSize(pkt,5);
+               pkt->payload[0]   =  temp->slotOffset       & 0xFF;
+               pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
+               pkt->payload[2]   = temp->channelOffset;// channel offset
+               pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
+               pkt->payload[4]   = linkOption;         // linkOption
+               len+=5;
+               break;
+           case CELLTYPE_TXRX:
+               for (i = slot; i>SCHEDULE_MINIMAL_6TISCH_EB_CELLS; i--) {
+                   if(temp->slotOffset == i - 1) {
+                      break;
+                   }
+               }
+               linkOption = (1<<FLAG_TX_S)|(1<<FLAG_RX_S)|(1<<FLAG_SHARED_S);
+               packetfunctions_reserveHeaderSize(pkt,5);
+               pkt->payload[0]   =  temp->slotOffset       & 0xFF;
+               pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
+               pkt->payload[2]   = temp->channelOffset;// channel offset
+               pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
+               pkt->payload[4]   = linkOption;         // linkOption
+               len+=5;
+               break;
+           }
+       }
+       temp = temp->next;
+   } while(temp != start);
+
    
    // for each link in the default schedule, add:
    // - [1B] linkOption bitmap
@@ -106,8 +156,8 @@ port_INLINE uint8_t processIE_prependSlotframeLinkIE(OpenQueueEntry_t* pkt){
    linkOption = (1<<FLAG_TX_S)|(1<<FLAG_RX_S)|(1<<FLAG_SHARED_S);
    while(slot>SCHEDULE_MINIMAL_6TISCH_EB_CELLS){
       packetfunctions_reserveHeaderSize(pkt,5);
-      pkt->payload[0]   =  slot       & 0xFF;
-      pkt->payload[1]   = (slot >> 8) & 0xFF;
+      pkt->payload[0]   =  (slot - 1)       & 0xFF;
+      pkt->payload[1]   = ((slot - 1) >> 8) & 0xFF;
       pkt->payload[2]   = 0x00;             // channel offset
       pkt->payload[3]   = 0x00;
       pkt->payload[4]   = linkOption;       // linkOption
@@ -122,8 +172,8 @@ port_INLINE uint8_t processIE_prependSlotframeLinkIE(OpenQueueEntry_t* pkt){
                 (1<<FLAG_SHARED_S)      |
                 (1<<FLAG_TIMEKEEPING_S);
    packetfunctions_reserveHeaderSize(pkt,5);
-   pkt->payload[0] =  SCHEDULE_MINIMAL_6TISCH_EB_CELLS       & 0xFF;
-   pkt->payload[1] = (SCHEDULE_MINIMAL_6TISCH_EB_CELLS >> 8) & 0xFF;
+   pkt->payload[0] =   SCHEDULE_MINIMAL_6TISCH_EB_CELLS - 1        & 0xFF;
+   pkt->payload[1] = ((SCHEDULE_MINIMAL_6TISCH_EB_CELLS - 1) >> 8) & 0xFF;
    pkt->payload[2] = 0x00; //  channel offset
    pkt->payload[3] = 0x00;
    pkt->payload[4] = linkOption;
@@ -437,7 +487,23 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
          linkInfo.linkoptions = *((uint8_t*)(pkt->payload)+localptr);
          localptr++;
          
-         // TODO: inform schedule of that link so it can update if needed.
+         // update blacklist.
+         if(schedule_isSlotOffsetAvailable(linkInfo.tsNum) == FALSE) {
+             if(linkInfo.linkoptions & (1 << FLAG_SHARED_S)) {
+                 // this is a shared slot
+             } else {
+                 if(linkInfo.linkoptions & (1 << FLAG_TX_S)) {
+                     sixtop_markBlacklist(linkInfo.tsNum, linkInfo.choffset,B_RX);
+                 } else {
+                     if(linkInfo.linkoptions & (1 << FLAG_RX_S)) {
+                         sixtop_markBlacklist(linkInfo.tsNum, linkInfo.choffset,B_TX);
+                     } else {
+                         // TODO: if is timekeeping slot.
+                     }
+                 }
+             }
+         }
+         
       } 
       i++;
    }
