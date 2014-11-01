@@ -318,9 +318,9 @@ void sixtop_removeCell(open_addr_t* neighbor){
 }
 
 bool sixtop_isBlacklisted(uint16_t tsNum, uint16_t choffset, sixtop_blacklist_type_t type) {
-    uint8_t i,j;
+    uint8_t i;
     bool state = FALSE;
-    swtich(type) {
+    switch(type) {
     case B_TX:
         for(i=0;i<MAXBLACKLISTLENGTH;i++) {
             if(sixtop_blacklist_vars.blacklistTx[i].slotoffset == tsNum    &&
@@ -340,7 +340,8 @@ bool sixtop_isBlacklisted(uint16_t tsNum, uint16_t choffset, sixtop_blacklist_ty
         }
         break;
     default: 
-        // something wrong
+        // Never happened
+        leds_error_blink();
     }
     return state;
 }
@@ -1316,7 +1317,6 @@ bool sixtop_areAvailableCellsToBeScheduled(
       uint8_t      bandwidth
    ){
    uint8_t i;
-   uint8_t j;
    uint8_t bw;
    bool    available;
    
