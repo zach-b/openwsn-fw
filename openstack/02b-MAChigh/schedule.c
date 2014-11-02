@@ -404,6 +404,26 @@ scheduleEntry_t*   schedule_getCurrentScheduleEntry(void) {
     return schedule_vars.currentScheduleEntry;
 }
 
+bool schedule_getNeighborBySlot(uint16_t slotOffset, open_addr_t* addrToWrite){
+   scheduleEntry_t* scheduleWalker;
+   
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+   
+   scheduleWalker = schedule_vars.currentScheduleEntry;
+   do {
+      if (slotOffset == scheduleWalker->slotOffset){
+          memcpy(addrToWrite, &(scheduleWalker->neighbor), sizeof(open_addr_t));
+          return TRUE;
+      }
+      scheduleWalker = scheduleWalker->next;
+   }while(scheduleWalker!=schedule_vars.currentScheduleEntry);
+   
+   ENABLE_INTERRUPTS();
+   
+   return FALSE;
+}
+
 //=== from IEEE802154E: reading the schedule and updating statistics
 
 void schedule_syncSlotOffset(slotOffset_t targetSlotOffset) {

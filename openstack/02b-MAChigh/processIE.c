@@ -444,6 +444,8 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
    uint8_t              localptr;
    slotframeLink_IE_ht  sfInfo; 
    cellInfo_ht          linkInfo;
+   open_addr_t          neighbor;
+   slotinfo_element_t   slotInfo;
    
    localptr = *ptr; 
   
@@ -488,7 +490,8 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
          localptr++;
          
          // update blacklist.
-         if(schedule_isSlotOffsetAvailable(linkInfo.tsNum) == FALSE) {
+         if(schedule_isSlotOffsetAvailable(linkInfo.tsNum) == TRUE) {
+             // the cell is not in my schedule
              if(linkInfo.linkoptions & (1 << FLAG_SHARED_S)) {
                  // this is a shared slot
              } else {
@@ -502,6 +505,29 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
                      }
                  }
              }
+         } else {
+             // the cell is in my schedule, check collision by rules 
+             if (
+                   schedule_getNeighborBySlot(linkInfo.tsNum, &neighbor) == TRUE &&
+                   packetfunctions_sameAddress(&neighbor, &(pkt->l2_nextORpreviousHop)) == FALSE
+             ) {
+                 // useing the rules for collision, 
+                 schedule_getSlotInfo(linkInfo.tsNum, &neighbor,&slotInfo);
+                 if( slotInfo.channelOffset == linkInfo.choffset) {
+                     if (linkInfo.linkoptions & (1 << FLAG_TX_S) && slotInfo.link_type == CELLTYPE_RX ) {
+                         sixtop_markBlacklist(linkInfo.tsNum, linkInfo.choffset,B_RX);
+                         //remove specific cells
+                     } else {
+                         if (linkInfo.linkoptions & (1 << FLAG_RX_S) && slotInfo.link_type == CELLTYPE_TX ) {
+                             sixtop_markBlacklist(linkInfo.tsNum, linkInfo.choffset,B_TX);
+                             //remove specific cells
+                         } else {
+                             // nothing to do 
+                         }
+                     }
+                     
+                 }
+             }         
          }
          
       } 

@@ -33,7 +33,8 @@ in that table; a slot is "active" when it is not of type CELLTYPE_OFF.
 Set this number to the exact number of active slots you are planning on having
 in your schedule, so not to waste RAM.
 */
-#define MAXACTIVESLOTS       (NUMADVSLOTS+NUMSHAREDTXRX+NUMSERIALRX)
+//#define MAXACTIVESLOTS       (NUMADVSLOTS+NUMSHAREDTXRX+NUMSERIALRX)
+#define MAXACTIVESLOTS       11
 
 /**
 \brief Minimum backoff exponent.
@@ -149,6 +150,7 @@ owerror_t          schedule_removeActiveSlot(
 );
 bool               schedule_isSlotOffsetAvailable(uint16_t slotOffset);
 scheduleEntry_t*   schedule_getCurrentScheduleEntry(void);
+bool               schedule_getNeighborBySlot(uint16_t slotOffset, open_addr_t* addrToWrite);
 // from IEEE802154E
 void               schedule_syncSlotOffset(slotOffset_t targetSlotOffset);
 void               schedule_advanceSlot(void);
