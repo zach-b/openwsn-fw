@@ -1194,6 +1194,9 @@ bool sixtop_candidateAddCellList(
                   }
               }
           }
+          if(numCandCells==SCHEDULEIEMAXNUMCELLS){
+              break;
+          }
       }
    }
    
