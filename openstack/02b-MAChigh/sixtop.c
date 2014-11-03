@@ -898,7 +898,7 @@ void sixtop_six2six_sendDone(OpenQueueEntry_t* msg, owerror_t error){
          sixtop_vars.six2six_state = SIX_IDLE;
          
          // notify OTF
-         otf_notif_addedCell();
+//         otf_notif_addedCell();
          
          break;
       case SIX_WAIT_REMOVEREQUEST_SENDDONE:
@@ -1234,7 +1234,7 @@ void sixtop_notifyReceiveRemoveLinkRequest(
    sixtop_removeCellsByState(frameID,numOfCells,cellList,addr);
    
    // notify OTF
-   otf_notif_removedCell();
+//   otf_notif_removedCell();
    
    sixtop_vars.six2six_state = SIX_IDLE;
 

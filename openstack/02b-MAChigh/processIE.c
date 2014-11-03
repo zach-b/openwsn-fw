@@ -512,7 +512,7 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
                    neighbor.type == ADDR_64B &&
                    packetfunctions_sameAddress(&neighbor, &(pkt->l2_nextORpreviousHop)) == FALSE
              ) {
-                 // using the rules for collision, 
+                 // using the rules to find collision, 
                  schedule_getSlotInfo(linkInfo.tsNum, &neighbor,&slotInfo);
                  if (slotInfo.channelOffset == linkInfo.choffset) {
                      if (linkInfo.linkoptions & (1 << FLAG_TX_S) && slotInfo.link_type == CELLTYPE_RX ) {
