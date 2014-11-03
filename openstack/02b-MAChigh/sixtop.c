@@ -1196,13 +1196,17 @@ void sixtop_notifyReceiveLinkResponse(
       return;
    } else {
       // need to check whether the links are available to be scheduled.
-      if(bw != numOfcells                                                ||
-         schedule_ie->frameID != bandwidth_ie->slotframeID               ||
-         sixtop_areAvailableCellsToBeScheduled(frameID, 
-                                               numOfcells, 
-                                               schedule_ie->cellList, 
-                                               bw) == FALSE){
+      if(
+         bw != numOfcells                                                ||
+         schedule_ie->frameID != bandwidth_ie->slotframeID          
+         // do not need check again, the state of sixtop will do this work.
+//         sixtop_areAvailableCellsToBeScheduled(frameID, 
+//                                               numOfcells, 
+//                                               schedule_ie->cellList, 
+//                                               bw) == FALSE
+      ){
          // link request failed,inform uplayer
+          leds_error_blink();
       } else {
          sixtop_addCellsByState(frameID,
                                 bw,
@@ -1364,6 +1368,7 @@ void sixtop_addCellsByState(
                );
                break;
             default:
+                leds_error_blink();
                //log error
                break;
          }
