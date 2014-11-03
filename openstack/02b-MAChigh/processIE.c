@@ -511,16 +511,22 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
                    schedule_getNeighborBySlot(linkInfo.tsNum, &neighbor) == TRUE &&
                    packetfunctions_sameAddress(&neighbor, &(pkt->l2_nextORpreviousHop)) == FALSE
              ) {
-                 // useing the rules for collision, 
+                 // using the rules for collision, 
                  schedule_getSlotInfo(linkInfo.tsNum, &neighbor,&slotInfo);
-                 if( slotInfo.channelOffset == linkInfo.choffset) {
+                 if (slotInfo.channelOffset == linkInfo.choffset) {
                      if (linkInfo.linkoptions & (1 << FLAG_TX_S) && slotInfo.link_type == CELLTYPE_RX ) {
                          sixtop_markBlacklist(linkInfo.tsNum, linkInfo.choffset,B_RX);
                          //remove specific cells
+                         linkInfo.linkoptions = CELLTYPE_RX;
+                         sixtop_removeCellByInfo(&neighbor, &linkInfo);
+                         sixtop_addCells(&neighbor, 1);
                      } else {
                          if (linkInfo.linkoptions & (1 << FLAG_RX_S) && slotInfo.link_type == CELLTYPE_TX ) {
                              sixtop_markBlacklist(linkInfo.tsNum, linkInfo.choffset,B_TX);
                              //remove specific cells
+                             linkInfo.linkoptions = CELLTYPE_TX;
+                             sixtop_removeCellByInfo(&neighbor, &linkInfo);
+                             sixtop_addCells(&neighbor, 1);
                          } else {
                              // nothing to do 
                          }
