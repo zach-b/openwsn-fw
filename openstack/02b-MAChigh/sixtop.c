@@ -1252,28 +1252,31 @@ bool sixtop_candidateAddCellList(
    uint16_t i;
    uint8_t j;
    uint8_t numCandCells;
+   uint8_t rounds;
    
    *type = 1;
    *frameID = SCHEDULE_MINIMAL_6TISCH_DEFAULT_SLOTFRAME_HANDLE;
    *flag = 1; // the cells listed in cellList are available to be schedule.
    
    numCandCells=0;
-   for(i=0;i<SUPERFRAME_LENGTH;i++){
-      if(schedule_isSlotOffsetAvailable(i)==TRUE){
-          for(j=0; j<16; j++) {
-              if(sixtop_isBlacklisted(i,j,B_TX) == FALSE) {
-                  cellList[numCandCells].tsNum       = i;
-                  cellList[numCandCells].choffset    = j;
-                  cellList[numCandCells].linkoptions = CELLTYPE_TX;
-                  numCandCells++;
-                  if(numCandCells==SCHEDULEIEMAXNUMCELLS){
-                      break;
-                  }
-              }
-          }
-          if(numCandCells==SCHEDULEIEMAXNUMCELLS){
-              break;
-          }
+   while(numCandCells < 3) {
+       rounds = 3;
+       while(rounds > 0) {
+           i = (openrandom_get16b()&0x3f) + (openrandom_get16b()&0x1f) + (openrandom_get16b()&0x07); // randomly select slotoffset 0~101 
+           if (i == 101) {i = 100;} // when i is 101, we set it to 100. 
+           j = (openrandom_get16b()&0x0f); // randomly select channeloffset 0~15
+           if (schedule_isSlotOffsetAvailable(i)==TRUE && sixtop_isBlacklisted(i,j,B_TX) == FALSE){
+               cellList[numCandCells].tsNum       = i;
+               cellList[numCandCells].choffset    = j;
+               cellList[numCandCells].linkoptions = CELLTYPE_TX;
+               numCandCells += 1;
+               break;
+           }
+           rounds -= 1;
+      }
+      if (rounds == 0) {
+          // jump to next round
+          numCandCells += 1;
       }
    }
    
