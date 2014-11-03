@@ -509,6 +509,7 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
              // the cell is in my schedule, check collision by rules 
              if (
                    schedule_getNeighborBySlot(linkInfo.tsNum, &neighbor) == TRUE &&
+                   neighbor.type == ADDR_64B &&
                    packetfunctions_sameAddress(&neighbor, &(pkt->l2_nextORpreviousHop)) == FALSE
              ) {
                  // using the rules for collision, 
