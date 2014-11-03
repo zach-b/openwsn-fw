@@ -46,7 +46,7 @@ typedef enum {
 
 //=========================== typedef =========================================
 
-#define SIX2SIX_TIMEOUT_MS 2000
+#define SIX2SIX_TIMEOUT_MS 5000
 #define MAXBLACKLISTLENGTH 20
 
 //=========================== module variables ================================
