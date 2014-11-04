@@ -1857,6 +1857,28 @@ void changeIsSync(bool newIsSync) {
 //======= notifying upper layer
 
 void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
+    
+   uint8_t temp[11];
+   // tengfei: statistic
+   // sequence number
+   temp[0] = packetSent->l2_dsn;
+   // asn
+   memcpy(&temp[1],&ieee154e_vars.asn,sizeof(asn_t));
+   // slotoffset
+   memcpy(&temp[6],&ieee154e_vars.slotOffset,sizeof(slotOffset_t));
+   // frequency
+   temp[8]  = ieee154e_vars.freq;
+   // rssi
+   temp[9]  = packetSent->l1_rssi;
+   // lqi
+   temp[10] = packetSent->l1_lqi;
+   openserial_printStatus(
+      12,
+      (uint8_t*)&temp,
+      11
+   ); 
+    
+    
    // record the outcome of the trasmission attempt
    packetSent->l2_sendDoneError   = error;
    // record the current ASN
@@ -1871,6 +1893,27 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
 }
 
 void notif_receive(OpenQueueEntry_t* packetReceived) {
+    
+   uint8_t temp[11];
+   // tengfei: statistic
+   // sequence number
+   temp[0] = packetReceived->l2_dsn;
+   // asn
+   memcpy(&temp[1],&ieee154e_vars.asn,sizeof(asn_t));
+   // slotoffset
+   memcpy(&temp[6],&ieee154e_vars.slotOffset,sizeof(slotOffset_t));
+   // frequency
+   temp[8]  = ieee154e_vars.freq;
+   // rssi
+   temp[9]  = packetReceived->l1_rssi;
+   // lqi
+   temp[10] = packetReceived->l1_lqi;
+   openserial_printStatus(
+      12,
+      (uint8_t*)&temp,
+      11
+   ); 
+    
    // record the current ASN
    memcpy(&packetReceived->l2_asn, &ieee154e_vars.asn, sizeof(asn_t));
    // indicate reception to the schedule, to keep statistics
