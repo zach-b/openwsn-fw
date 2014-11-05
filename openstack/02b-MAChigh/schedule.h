@@ -17,7 +17,7 @@
 
 The superframe repears over time and can be arbitrarly long.
 */
-#define SUPERFRAME_LENGTH    101 //should be 101
+#define SUPERFRAME_LENGTH    23 //should be 101
 
 #define NUMADVSLOTS          1
 #define NUMSHAREDTXRX        5 
@@ -82,6 +82,9 @@ typedef struct {
    uint8_t         numRx;
    uint8_t         numTx;
    uint8_t         numTxACK;
+   uint16_t        numRxTotal;
+   uint16_t        numTxTotal;
+   uint16_t        numTxACKTotal;
    asn_t           lastUsedAsn;
    void*           next;
 } scheduleEntry_t;
@@ -97,6 +100,9 @@ typedef struct {
    uint8_t         numRx;
    uint8_t         numTx;
    uint8_t         numTxACK;
+   uint16_t        numRxTotal;
+   uint16_t        numTxTotal;
+   uint16_t        numTxACKTotal;
    asn_t           lastUsedAsn;
 } debugScheduleEntry_t;
 END_PACK

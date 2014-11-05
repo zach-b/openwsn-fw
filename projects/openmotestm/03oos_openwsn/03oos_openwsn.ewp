@@ -320,6 +320,7 @@
           <state>$PROJ_DIR$\..\..\..\openapps\c6t\</state>
           <state>$PROJ_DIR$\..\..\..\openapps\cinfo\</state>
           <state>$PROJ_DIR$\..\..\..\openapps\cleds\</state>
+          <state>$PROJ_DIR$\..\..\..\openapps\cstorm\</state>
           <state>$PROJ_DIR$\..\..\..\openapps\cwellknown\</state>
           <state>$PROJ_DIR$\..\..\..\openapps\techo\</state>
           <state>$PROJ_DIR$\..\..\..\openapps\tohlone\</state>
@@ -2168,6 +2169,15 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\openapps\cleds\cleds.h</name>
+      </file>
+    </group>
+    <group>
+      <name>cstorm</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\openapps\cstorm\cstorm.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\openapps\cstorm\cstorm.h</name>
       </file>
     </group>
     <group>
