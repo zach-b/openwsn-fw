@@ -171,7 +171,7 @@ void cstorm_task_cb() {
       openserial_printError(COMPONENT_CSTORM,ERR_NO_FREE_PACKET_BUFFER,
                             (errorparameter_t)0,
                             (errorparameter_t)0);
-      openqueue_freePacketBuffer(pkt);
+//      openqueue_freePacketBuffer(pkt);
       return;
    }
    

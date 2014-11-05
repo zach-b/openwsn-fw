@@ -856,6 +856,12 @@ port_INLINE void activity_ti1ORri1() {
             ieee154e_vars.dataToSend = NULL;
          }
          if (ieee154e_vars.dataToSend!=NULL) {   // I have a packet to send
+             
+            if (ieee154e_vars.dataToSend->creator == COMPONENT_CSTORM && cellType==CELLTYPE_TXRX) {
+                endSlot();
+                break;
+            } 
+             
             // change state
             changeState(S_TXDATAOFFSET);
             // change owner

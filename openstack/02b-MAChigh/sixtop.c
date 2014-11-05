@@ -1266,8 +1266,8 @@ bool sixtop_candidateAddCellList(
    while(numCandCells < 3) {
        rounds = 3;
        while(rounds > 0) {
-           i = (openrandom_get16b()&0x3f) + (openrandom_get16b()&0x1f) + (openrandom_get16b()&0x07); // randomly select slotoffset 0~101 
-           if (i == 101) {i = 100;} // when i is 101, we set it to 100. 
+           i = (openrandom_get16b()&0x0f) + (openrandom_get16b()&0x07); // randomly select slotoffset 0~22 
+//           if (i == 101) {i = 100;} // when i is 101, we set it to 100. 
            j = (openrandom_get16b()&0x0f); // randomly select channeloffset 0~15
            if (schedule_isSlotOffsetAvailable(i)==TRUE && sixtop_isBlacklisted(i,j,B_TX) == FALSE){
                cellList[numCandCells].tsNum       = i;
