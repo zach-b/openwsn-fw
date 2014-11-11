@@ -44,6 +44,31 @@ bool debugPrint_queue() {
    openserial_printStatus(STATUS_QUEUE,(uint8_t*)&output,QUEUELENGTH*sizeof(debugOpenQueueEntry_t));
    return TRUE;
 }
+
+uint8_t openqueue_getToBeSentPackets() {
+   uint8_t i;
+   uint8_t num;
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+   
+   // refuse to allocate if we're not in sync
+   if (ieee154e_isSynch()==FALSE){
+     ENABLE_INTERRUPTS();
+     return 0;
+   }
+   
+   num = 0;
+   
+   // walk through queue and find entry owned by COMPONENT_SIXTOP_TO_IEEE802154E
+   for (i=0;i<QUEUELENGTH;i++) {
+      if (openqueue_vars.queue[i].owner == COMPONENT_SIXTOP_TO_IEEE802154E) {
+         num++;
+      }
+   }
+   ENABLE_INTERRUPTS();
+   return num;
+}
+
 /**
 \brief 
 

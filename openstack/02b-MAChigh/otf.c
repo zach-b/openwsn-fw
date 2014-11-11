@@ -45,7 +45,7 @@ void otf_maintenance_timer_cb(void) {
 void timer_otf_management_fired(void) {
     uint8_t currentPacketsInQueue;
     
-    currentPacketsInQueue = openqueue_getNumOfPacketByCreator(COMPONENT_CSTORM);
+    currentPacketsInQueue = openqueue_getToBeSentPackets();
     
     if (currentPacketsInQueue < otf_vars.lastPacketsInQueue) {
         otf_removeCell_task();
