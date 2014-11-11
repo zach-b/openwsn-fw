@@ -63,6 +63,7 @@ static PyObject* OpenMote_getState(OpenMote* self) {
    PyObject* sixtop_blacklist_vars;
    PyObject* schedule_vars;
    PyObject* schedule_dbg;
+   PyObject* otf_vars;
    PyObject* ieee154e_vars;
    PyObject* ieee154e_stats;
    PyObject* ieee154e_dbg;
@@ -148,6 +149,11 @@ static PyObject* OpenMote_getState(OpenMote* self) {
    schedule_dbg = PyDict_New();
    // TODO
    PyDict_SetItemString(returnVal, "schedule_dbg", schedule_dbg);
+   
+   // otf_vars
+   otf_vars = PyDict_New();
+   // TODO
+   PyDict_SetItemString(returnVal, "otf_vars", otf_vars);
    
    // ieee154e_vars
    ieee154e_vars = PyDict_New();
