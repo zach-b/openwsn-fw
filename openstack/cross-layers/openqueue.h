@@ -33,6 +33,7 @@ typedef struct {
 // admin
 void               openqueue_init(void);
 bool               debugPrint_queue(void);
+uint8_t            openqueue_getNumOfPacketByCreator(uint8_t creator);
 // called by any component
 OpenQueueEntry_t*  openqueue_getFreePacketBuffer(uint8_t creator);
 owerror_t         openqueue_freePacketBuffer(OpenQueueEntry_t* pkt);

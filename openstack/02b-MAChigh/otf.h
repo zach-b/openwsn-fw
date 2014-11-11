@@ -9,12 +9,21 @@
 */
 
 #include "opendefs.h"
+#include "opentimers.h"
 
 //=========================== define ==========================================
+
+#define QUEUE_WATCHER_PERIOD   5000
 
 //=========================== typedef =========================================
 
 //=========================== module variables ================================
+
+typedef struct {
+   uint16_t             periodMaintenance;
+   opentimer_id_t       maintenanceTimerId;
+   uint8_t              lastPacketsInQueue;
+} otf_vars_t;
 
 //=========================== prototypes ======================================
 
