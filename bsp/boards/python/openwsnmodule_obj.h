@@ -19,6 +19,7 @@
 #include "neighbors_obj.h"
 #include "processIE_obj.h"
 #include "sixtop_obj.h"
+#include "otf_obj.h"
 #include "schedule_obj.h"
 #include "icmpv6echo_obj.h"
 #include "icmpv6rpl_obj.h"
