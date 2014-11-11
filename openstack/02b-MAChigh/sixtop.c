@@ -1307,7 +1307,7 @@ bool sixtop_candidateRemoveCellList(
    *flag           = 1;
   
    numCandCells    = 0;
-   for(i=0;i<MAXACTIVESLOTS;i++){
+   for(i=0;i<SUPERFRAME_LENGTH;i++){
       schedule_getSlotInfo(i,neighbor,&info);
       if(info.link_type == CELLTYPE_TX){
          cellList[numCandCells].tsNum       = i;
