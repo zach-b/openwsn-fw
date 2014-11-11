@@ -9,6 +9,7 @@
 */
 
 #include "opendefs.h"
+#include "opentimers.h"
 
 //=========================== define ==========================================
 
@@ -56,6 +57,13 @@ See MINBE for an explanation of backoff.
 #define SCHEDULE_MINIMAL_6TISCH_SLOTFRAME_SIZE                  101
 #define SCHEDULE_MINIMAL_6TISCH_DEFAULT_SLOTFRAME_HANDLE          1 //id of slotframe
 #define SCHEDULE_MINIMAL_6TISCH_DEFAULT_SLOTFRAME_NUMBER          1 //1 slotframe by default.
+
+// statistic 
+#define MIN_PACKET_FOR_PDR    10   // PDR is available when number of sent packets \
+is larger than MIN_PACKET_FOR_PDR
+#define PDRTHRESHOLD          40   // percentage PDR = PDRTHRESHOLD*2%
+#define MAINTAINCEPERIOD    3000   // every 3 seconds, calculated pdr one cell \
+and rotate within schedule. For each cells, the pdr's life time is MAINTANCEPERIOD*slotframesize
 
 //=========================== typedef =========================================
 
@@ -124,6 +132,9 @@ typedef struct {
    uint8_t          backoffExponent;
    uint8_t          backoff;
    uint8_t          debugPrintRow;
+   uint16_t         periodMaintenance;
+   opentimer_id_t   maintenanceTimerId;
+   uint8_t          pdrCalculateRow;
 } schedule_vars_t;
 
 //=========================== prototypes ======================================

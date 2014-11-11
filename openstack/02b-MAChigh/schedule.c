@@ -4,6 +4,7 @@
 #include "openrandom.h"
 #include "packetfunctions.h"
 #include "sixtop.h"
+#include "scheduler.h"
 
 //=========================== variables =======================================
 
@@ -12,6 +13,8 @@ schedule_vars_t schedule_vars;
 //=========================== prototypes ======================================
 
 void schedule_resetEntry(scheduleEntry_t* pScheduleEntry);
+void schedule_maintenance_timer_cb(void);
+void timer_schedule_management_fired(void);
 
 //=========================== public ==========================================
 
@@ -77,6 +80,15 @@ void schedule_init() {
       &temp_neighbor              // neighbor
    );
    running_slotOffset++;
+   
+   schedule_vars.periodMaintenance  = MAINTAINCEPERIOD;     // maintenance timer fired every 3 seconds
+   schedule_vars.maintenanceTimerId = opentimers_start(
+      schedule_vars.periodMaintenance,
+      TIMER_PERIODIC,
+      TIME_MS,
+      schedule_maintenance_timer_cb
+   );
+   
 }
 
 /**
@@ -686,4 +698,34 @@ void schedule_resetEntry(scheduleEntry_t* e) {
    e->lastUsedAsn.bytes2and3 = 0;
    e->lastUsedAsn.byte4      = 0;
    e->next                   = NULL;
+}
+
+// timer interrupt callbacks
+
+void schedule_maintenance_timer_cb() {
+   scheduler_push_task(timer_schedule_management_fired,TASKPRIO_SCHEDULE);
+}
+
+void timer_schedule_management_fired() {
+   uint16_t pdr;   // range from 0~ 50 
+   cellInfo_ht cellInfo;
+   
+   // increment the row just calculated
+   schedule_vars.pdrCalculateRow = (schedule_vars.pdrCalculateRow+1)%MAXACTIVESLOTS;
+   
+   if (
+       schedule_vars.scheduleBuf[schedule_vars.pdrCalculateRow].numTxTotal > MIN_PACKET_FOR_PDR \
+       &&     schedule_vars.scheduleBuf[schedule_vars.pdrCalculateRow].type == CELLTYPE_TX
+   ) {
+       pdr = schedule_vars.scheduleBuf[schedule_vars.pdrCalculateRow].numTxACKTotal * 50 / \
+           schedule_vars.scheduleBuf[schedule_vars.pdrCalculateRow].numTxTotal;
+       if (pdr < PDRTHRESHOLD) {
+           cellInfo.tsNum       = schedule_vars.scheduleBuf[schedule_vars.pdrCalculateRow].slotOffset;
+           cellInfo.choffset    = schedule_vars.scheduleBuf[schedule_vars.pdrCalculateRow].channelOffset;
+           cellInfo.linkoptions = schedule_vars.scheduleBuf[schedule_vars.pdrCalculateRow].type;
+           sixtop_removeCellByInfo(     \
+               &(schedule_vars.scheduleBuf[schedule_vars.pdrCalculateRow].neighbor),\
+               &cellInfo);
+       }
+   }
 }
