@@ -13,7 +13,7 @@
 #include "neighbors.h"
 #include "debugpins.h"
 #include "sixtop.h"
-#include "adaptive_sync.h"
+//#include "adaptive_sync.h"
 #include "processIE.h"
 
 //=========================== variables =======================================
@@ -176,7 +176,7 @@ void isr_ieee154e_newSlot() {
       }
    } else {
      // adaptive synchronization
-      adaptive_sync_countCompensationTimeout();
+//      adaptive_sync_countCompensationTimeout();
       activity_ti1ORri1();
    }
    ieee154e_dbg.num_newSlot++;
@@ -902,7 +902,7 @@ port_INLINE void activity_ti1ORri1() {
             incrementAsnOffset();
          }
          // deal with the case when schedule multi slots
-         adaptive_sync_countCompensationTimeout_compoundSlots(NUMSERIALRX-1);
+//         adaptive_sync_countCompensationTimeout_compoundSlots(NUMSERIALRX-1);
          
          break;
       case CELLTYPE_MORESERIALRX:
@@ -1784,7 +1784,7 @@ void synchronizePacket(PORT_RADIOTIMER_WIDTH timeReceived) {
    radio_setTimerPeriod(newPeriod);
    
    // indicate time correction to adaptive sync module
-   adaptive_sync_indicateTimeCorrection(timeCorrection,ieee154e_vars.dataReceived->l2_nextORpreviousHop);
+//   adaptive_sync_indicateTimeCorrection(timeCorrection,ieee154e_vars.dataReceived->l2_nextORpreviousHop);
    
    // reset the de-synchronization timeout
    ieee154e_vars.deSyncTimeout    = DESYNCTIMEOUT;
@@ -1827,7 +1827,7 @@ void synchronizeAck(PORT_SIGNED_INT_WIDTH timeCorrection) {
    ieee154e_vars.deSyncTimeout    = DESYNCTIMEOUT;
    
    // indicate time correction to adaptive sync module
-   adaptive_sync_indicateTimeCorrection((-timeCorrection),ieee154e_vars.ackReceived->l2_nextORpreviousHop);
+//   adaptive_sync_indicateTimeCorrection((-timeCorrection),ieee154e_vars.ackReceived->l2_nextORpreviousHop);
    
    // log a large timeCorrection
    if (
