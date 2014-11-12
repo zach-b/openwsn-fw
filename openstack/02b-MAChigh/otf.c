@@ -4,6 +4,8 @@
 #include "sixtop.h"
 #include "scheduler.h"
 #include "openqueue.h"
+#include "openserial.h"
+#include "IEEE802154E.h"
 
 //=========================== variables =======================================
 
@@ -46,6 +48,7 @@ void otf_maintenance_timer_cb(void) {
 void timer_otf_management_fired(void) {
     uint8_t currentPacketsInQueue;
     open_addr_t* address;
+    uint8_t output[3];
     
     if (ieee154e_isSynch() == FALSE) {
         return;
@@ -85,6 +88,10 @@ void timer_otf_management_fired(void) {
                 }
             }
             otf_vars.lastPacketsInQueue[otf_vars.neighborRaw] = currentPacketsInQueue;
+            output[0] = address->addr_16b[0];
+            output[1] = address->addr_16b[1];
+            output[2] = currentPacketsInQueue;
+            openserial_printStatus(STATUS_QUEUE_OTF,&(output[0]),sizeof(output));
             break;
         } else {
             otf_vars.neighborRaw = (otf_vars.neighborRaw + 1)%MAXNUMNEIGHBORS;
