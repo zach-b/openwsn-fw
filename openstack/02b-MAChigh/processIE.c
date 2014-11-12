@@ -131,14 +131,16 @@ port_INLINE uint8_t processIE_prependSlotframeLinkIE(OpenQueueEntry_t* pkt){
                       break;
                    }
                }
-               linkOption = (1<<FLAG_TX_S)|(1<<FLAG_RX_S)|(1<<FLAG_SHARED_S);
-               packetfunctions_reserveHeaderSize(pkt,5);
-               pkt->payload[0]   =  temp->slotOffset       & 0xFF;
-               pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
-               pkt->payload[2]   = temp->channelOffset;// channel offset
-               pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
-               pkt->payload[4]   = linkOption;         // linkOption
-               len+=5;
+               if (i == SCHEDULE_MINIMAL_6TISCH_EB_CELLS) {
+                   linkOption = (1<<FLAG_TX_S)|(1<<FLAG_RX_S)|(1<<FLAG_SHARED_S);
+                   packetfunctions_reserveHeaderSize(pkt,5);
+                   pkt->payload[0]   =  temp->slotOffset       & 0xFF;
+                   pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
+                   pkt->payload[2]   = temp->channelOffset;// channel offset
+                   pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
+                   pkt->payload[4]   = linkOption;         // linkOption
+                   len+=5;
+               }
                break;
            }
        }
