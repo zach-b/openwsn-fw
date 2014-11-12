@@ -18,6 +18,7 @@
 #include "uart.h"
 #include "opentimers.h"
 #include "openhdlc.h"
+#include "otf.h"
 
 //=========================== variables =======================================
 
@@ -320,6 +321,10 @@ void openserial_startOutput() {
       case STATUS_KAPERIOD:
          if (debugPrint_kaPeriod()==TRUE) {
             break;
+         }
+      case STATUS_LASTPKTNUM:
+         if (debugPrint_lastNumPkt()==TRUE) {
+             break;
          }
       default:
          DISABLE_INTERRUPTS();

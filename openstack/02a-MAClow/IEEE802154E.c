@@ -856,11 +856,22 @@ port_INLINE void activity_ti1ORri1() {
             ieee154e_vars.dataToSend = NULL;
          }
          if (ieee154e_vars.dataToSend!=NULL) {   // I have a packet to send
-             
-//            if (ieee154e_vars.dataToSend->creator == COMPONENT_CSTORM && cellType==CELLTYPE_TXRX) {
-//                endSlot();
-//                break;
-//            } 
+             /*
+            if ( // only packets created by COMPONENT_FORWARDING or COMPONENT_CSTORM \
+                 can and only can be sent on TX type slot
+                 ((
+                  ieee154e_vars.dataToSend->creator == COMPONENT_FORWARDING || \
+                  ieee154e_vars.dataToSend->creator == COMPONENT_CSTORM    
+                  ) && cellType == CELLTYPE_TXRX )                          || \
+                 ((
+                  ieee154e_vars.dataToSend->creator != COMPONENT_FORWARDING && \
+                  ieee154e_vars.dataToSend->creator != COMPONENT_CSTORM    
+                  ) && cellType == CELLTYPE_TX )
+            ) {
+                endSlot();
+                break;
+            } 
+             */
              
             // change state
             changeState(S_TXDATAOFFSET);

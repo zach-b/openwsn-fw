@@ -24,6 +24,7 @@ void timer_otf_management_fired(void);
 void otf_init(void) {
    otf_vars.periodMaintenance  = QUEUE_WATCHER_PERIOD;
    otf_vars.neighborRaw        = 0;
+   otf_vars.lastNumPkt         = 0;
    memset(&(otf_vars.lastPacketsInQueue[0]),0,sizeof(otf_vars.lastPacketsInQueue));
    otf_vars.maintenanceTimerId = opentimers_start(
       otf_vars.periodMaintenance,
@@ -57,7 +58,8 @@ void timer_otf_management_fired(void) {
     if (neighbors_getNumNeighbors() == 0) {
         return;
     }
-    
+        
+#ifdef NEIGHBOR_ORIENTED 
     otf_vars.neighborRaw = (otf_vars.neighborRaw + 1)%MAXNUMNEIGHBORS;
     address = neighbors_getNeighborByIndex(otf_vars.neighborRaw);
     
@@ -88,8 +90,8 @@ void timer_otf_management_fired(void) {
                 }
             }
             otf_vars.lastPacketsInQueue[otf_vars.neighborRaw] = currentPacketsInQueue;
-            output[0] = address->addr_16b[0];
-            output[1] = address->addr_16b[1];
+            output[0] = address->addr_64b[6];
+            output[1] = address->addr_64b[7];
             output[2] = currentPacketsInQueue;
             openserial_printStatus(STATUS_QUEUE_OTF,&(output[0]),sizeof(output));
             break;
@@ -98,6 +100,34 @@ void timer_otf_management_fired(void) {
             address = neighbors_getNeighborByIndex(otf_vars.neighborRaw);
         } 
     } while (TRUE);
+#else
+    currentPacketsInQueue  = openqueue_getToBeSentPackets();
+    
+    if (currentPacketsInQueue < otf_vars.lastNumPkt) {
+        if (otf_vars.lastNumPkt - currentPacketsInQueue > 1) {
+            otf_removeCell_task();
+        } else {
+            //return directly. Wait for next time to see whether the packet is indeed decreased
+            return;
+        }
+    } else {
+        if (currentPacketsInQueue > otf_vars.lastNumPkt) {
+            otf_addCell_task();
+        } else {
+            if (currentPacketsInQueue == otf_vars.lastNumPkt) {
+                if (currentPacketsInQueue == 0) {
+                    // if there is no packet in queue, try to remove cells if existed
+                    otf_removeCell_task();
+                } else {
+                    otf_addCell_task();
+                }
+            } else {
+                // No possible to be here.
+            }
+        }
+    }
+    otf_vars.lastNumPkt = currentPacketsInQueue;
+#endif
 }
 
 //=========================== private =========================================
@@ -133,4 +163,17 @@ void otf_removeCell_task(void) {
    sixtop_removeCell(
       &neighbor
    );
+}
+
+bool debugPrint_lastNumPkt() {
+   uint8_t output;
+   
+   output = otf_vars.lastNumPkt;
+   
+   openserial_printStatus(
+       STATUS_LASTPKTNUM,
+       (uint8_t*)&output,
+       sizeof(output)
+   );
+   return TRUE;
 }
