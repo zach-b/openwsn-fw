@@ -178,6 +178,15 @@ open_addr_t* neighbors_getKANeighbor(uint16_t kaPeriod) {
    }
 }
 
+open_addr_t*  neighbors_getNeighborByIndex(uint8_t index) {
+    
+   if (neighbors_vars.neighbors[index].used==TRUE) {
+      return &(neighbors_vars.neighbors[index].addr_64b);
+   } else {
+       return NULL;
+   }
+}
+
 //===== interrogators
 
 /**

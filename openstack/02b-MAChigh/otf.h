@@ -10,10 +10,11 @@
 
 #include "opendefs.h"
 #include "opentimers.h"
+#include "neighbors.h"
 
 //=========================== define ==========================================
 
-#define QUEUE_WATCHER_PERIOD   5000
+#define QUEUE_WATCHER_PERIOD   10000
 
 //=========================== typedef =========================================
 
@@ -22,7 +23,8 @@
 typedef struct {
    uint16_t             periodMaintenance;
    opentimer_id_t       maintenanceTimerId;
-   uint8_t              lastPacketsInQueue;
+   uint8_t              lastPacketsInQueue[MAXNUMNEIGHBORS];
+   uint8_t              neighborRaw;
 } otf_vars_t;
 
 //=========================== prototypes ======================================

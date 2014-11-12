@@ -34,6 +34,7 @@ typedef struct {
 void               openqueue_init(void);
 bool               debugPrint_queue(void);
 uint8_t            openqueue_getToBeSentPackets();  // return the number of packet owned by SIXTOP_TO_IEEE802154E
+uint8_t            openqueue_getToBeSentPacketsByNeighbor(open_addr_t* toNeighbor);
 uint8_t            openqueue_getNumOfPacketByCreator(uint8_t creator); // for specific app of QoS
 // called by any component
 OpenQueueEntry_t*  openqueue_getFreePacketBuffer(uint8_t creator);
