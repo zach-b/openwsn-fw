@@ -104,12 +104,7 @@ void timer_otf_management_fired(void) {
     currentPacketsInQueue  = openqueue_getToBeSentPackets();
     
     if (currentPacketsInQueue < otf_vars.lastNumPkt) {
-        if (otf_vars.lastNumPkt - currentPacketsInQueue > 1) {
-            otf_removeCell_task();
-        } else {
-            //return directly. Wait for next time to see whether the packet is indeed decreased
-            return;
-        }
+        otf_removeCell_task();
     } else {
         if (currentPacketsInQueue > otf_vars.lastNumPkt) {
             otf_addCell_task();
