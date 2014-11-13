@@ -1447,6 +1447,11 @@ bool sixtop_areAvailableCellsToBeScheduled(
 bool sixtop_insertToBlacklist(sixtop_blacklist_element_vars_t* element, sixtop_blacklist_type_t type) {
     uint16_t i;
     bool state = FALSE;
+    
+    if (sixtop_isBlacklisted(element->slotoffset,element->channeloffset,type) == TRUE) {
+        return TRUE;
+    }
+    
     if (type == B_TX) {
         for(i=0;i<MAXBLACKLISTLENGTH;i++) {
             if(sixtop_blacklist_vars.blacklistTx[i].used == FALSE) {
