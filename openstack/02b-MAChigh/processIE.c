@@ -103,46 +103,53 @@ port_INLINE uint8_t processIE_prependSlotframeLinkIE(OpenQueueEntry_t* pkt){
    start = schedule_getCurrentScheduleEntry();
    temp = start;
    do {
-       if(temp->type == CELLTYPE_TX || temp->type == CELLTYPE_RX || temp->type == CELLTYPE_TXRX) {
-           switch(temp->type) {
-           case CELLTYPE_TX:
-               linkOption = 1<<FLAG_TX_S;
-               packetfunctions_reserveHeaderSize(pkt,5);
-               pkt->payload[0]   =  temp->slotOffset       & 0xFF;
-               pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
-               pkt->payload[2]   = temp->channelOffset;// channel offset
-               pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
-               pkt->payload[4]   = linkOption;         // linkOption
-               len+=5;
-               break;
-           case CELLTYPE_RX:
-               linkOption = 1<<FLAG_RX_S;
-               packetfunctions_reserveHeaderSize(pkt,5);
-               pkt->payload[0]   =  temp->slotOffset       & 0xFF;
-               pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
-               pkt->payload[2]   = temp->channelOffset;// channel offset
-               pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
-               pkt->payload[4]   = linkOption;         // linkOption
-               len+=5;
-               break;
-           case CELLTYPE_TXRX:
-               for (i = slot; i>SCHEDULE_MINIMAL_6TISCH_EB_CELLS; i--) {
-                   if(temp->slotOffset == i - 1) {
-                      break;
-                   }
-               }
-               if (i == SCHEDULE_MINIMAL_6TISCH_EB_CELLS) {
-                   linkOption = (1<<FLAG_TX_S)|(1<<FLAG_RX_S)|(1<<FLAG_SHARED_S);
-                   packetfunctions_reserveHeaderSize(pkt,5);
-                   pkt->payload[0]   =  temp->slotOffset       & 0xFF;
-                   pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
-                   pkt->payload[2]   = temp->channelOffset;// channel offset
-                   pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
-                   pkt->payload[4]   = linkOption;         // linkOption
-                   len+=5;
-               }
-               break;
-           }
+       switch(temp->type) {
+       case CELLTYPE_TX:
+           linkOption = 1<<FLAG_TX_S;
+           packetfunctions_reserveHeaderSize(pkt,5);
+           pkt->payload[0]   =  temp->slotOffset       & 0xFF;
+           pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
+           pkt->payload[2]   = temp->channelOffset;// channel offset
+           pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
+           pkt->payload[4]   = linkOption;         // linkOption
+           len+=5;
+           break;
+       case CELLTYPE_RX:
+           linkOption = 1<<FLAG_RX_S;
+           packetfunctions_reserveHeaderSize(pkt,5);
+           pkt->payload[0]   =  temp->slotOffset       & 0xFF;
+           pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
+           pkt->payload[2]   = temp->channelOffset;// channel offset
+           pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
+           pkt->payload[4]   = linkOption;         // linkOption
+           len+=5;
+           break;
+       case CELLTYPE_TXRX:
+           linkOption = (1<<FLAG_TX_S)|(1<<FLAG_RX_S)|(1<<FLAG_SHARED_S);
+           packetfunctions_reserveHeaderSize(pkt,5);
+           pkt->payload[0]   =  temp->slotOffset       & 0xFF;
+           pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
+           pkt->payload[2]   = temp->channelOffset;// channel offset
+           pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
+           pkt->payload[4]   = linkOption;         // linkOption
+           len+=5;
+           break;
+       case CELLTYPE_ADV:
+           linkOption = (1<<FLAG_TX_S)          |
+                        (1<<FLAG_RX_S)          |
+                        (1<<FLAG_SHARED_S)      |
+                        (1<<FLAG_TIMEKEEPING_S);
+           packetfunctions_reserveHeaderSize(pkt,5);
+           pkt->payload[0]   =  temp->slotOffset       & 0xFF;
+           pkt->payload[1]   = (temp->slotOffset >> 8) & 0xFF;
+           pkt->payload[2]   = temp->channelOffset;// channel offset
+           pkt->payload[3]   = 0;                  // this byte is always 0, it's useless
+           pkt->payload[4]   = linkOption;         // linkOption
+           len+=5;
+           break;
+       default:
+           // just break;
+           break;
        }
        temp = temp->next;
    } while(temp != start);
@@ -190,9 +197,9 @@ port_INLINE uint8_t processIE_prependSlotframeLinkIE(OpenQueueEntry_t* pkt){
    packetfunctions_reserveHeaderSize(pkt,5);
    pkt->payload[0] = SCHEDULE_MINIMAL_6TISCH_DEFAULT_SLOTFRAME_NUMBER;  
    pkt->payload[1] = SCHEDULE_MINIMAL_6TISCH_DEFAULT_SLOTFRAME_HANDLE;
-   pkt->payload[2] =  SCHEDULE_MINIMAL_6TISCH_SLOTFRAME_SIZE       & 0xFF;
-   pkt->payload[3] = (SCHEDULE_MINIMAL_6TISCH_SLOTFRAME_SIZE >> 8) & 0xFF;
-   pkt->payload[4] = 0x06; //number of links
+   pkt->payload[2] =  SUPERFRAME_LENGTH       & 0xFF;
+   pkt->payload[3] = (SUPERFRAME_LENGTH >> 8) & 0xFF;
+   pkt->payload[4] = len/5; //number of links
   
    len+=5;
    
