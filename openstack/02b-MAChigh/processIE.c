@@ -455,6 +455,18 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
    cellInfo_ht          linkInfo;
    open_addr_t          neighbor;
    slotinfo_element_t   slotInfo;
+   bool                 flags[SUPERFRAME_LENGTH];
+   // maintain the schedule, remove the un paired RX cells
+   for (i=0;i<SUPERFRAME_LENGTH;i++) {
+       if (schedule_isSlotOffsetAvailable(i) == FALSE) {
+           schedule_getSlotInfo(i, &pkt->l2_nextORpreviousHop,&slotInfo);
+           if (slotInfo.link_type == CELLTYPE_RX) {
+               flags[i] = TRUE;
+           } else {
+               flags[i] = FALSE;
+           }
+       }
+   }
    
    localptr = *ptr; 
   
@@ -497,6 +509,11 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
          // [1B] LinkOption bitmap
          linkInfo.linkoptions = *((uint8_t*)(pkt->payload)+localptr);
          localptr++;
+         
+         // un flags the paired rx cell
+         if (linkInfo.linkoptions & (1 << FLAG_TX_S) && flags[linkInfo.tsNum]) {
+             flags[linkInfo.tsNum] = FALSE;
+         }
          
          // update blacklist.
          if(schedule_isSlotOffsetAvailable(linkInfo.tsNum) == TRUE) {
@@ -547,6 +564,13 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
          }
          
       } 
+      
+      // remove un paired rx cells
+      for (i=0;i<SUPERFRAME_LENGTH;i++) {
+          if (flags[i] == TRUE) {
+              schedule_removeActiveSlot(i,&pkt->l2_nextORpreviousHop);
+          }
+      }
       i++;
    }
    
