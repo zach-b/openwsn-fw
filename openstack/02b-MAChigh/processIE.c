@@ -10,6 +10,7 @@
 #include "schedule.h"
 #include "scheduler.h"
 #include "packetfunctions.h"
+#include "board.h"
 
 //=========================== variables =======================================
 
@@ -450,20 +451,26 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
    uint8_t              numSlotFrames;
    uint8_t              i;
    uint8_t              j;
+   uint8_t              k;
    uint8_t              localptr;
    slotframeLink_IE_ht  sfInfo; 
    cellInfo_ht          linkInfo;
    open_addr_t          neighbor;
    slotinfo_element_t   slotInfo;
    bool                 flags[SUPERFRAME_LENGTH];
+   open_addr_t*         myId;
+   
+   myId = idmanager_getMyID(ADDR_64B);
+   
+   printf("My ID is 0x%x 0x%x ... \n",myId->addr_64b[6],myId->addr_64b[7]);
+   
    // maintain the schedule, remove the un paired RX cells
-   for (i=0;i<SUPERFRAME_LENGTH;i++) {
-       if (schedule_isSlotOffsetAvailable(i) == FALSE) {
-           schedule_getSlotInfo(i, &pkt->l2_nextORpreviousHop,&slotInfo);
+   for (k=0;k<SUPERFRAME_LENGTH;k++) {
+       flags[k] = FALSE;
+       if (schedule_isSlotOffsetAvailable(k) == FALSE) {
+           schedule_getSlotInfo(k, &pkt->l2_nextORpreviousHop,&slotInfo);
            if (slotInfo.link_type == CELLTYPE_RX) {
-               flags[i] = TRUE;
-           } else {
-               flags[i] = FALSE;
+               flags[k] = TRUE;
            }
        }
    }
@@ -510,8 +517,8 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
          linkInfo.linkoptions = *((uint8_t*)(pkt->payload)+localptr);
          localptr++;
          
-         // un flags the paired rx cell
-         if (linkInfo.linkoptions & (1 << FLAG_TX_S) && flags[linkInfo.tsNum]) {
+         // set flags FALSE for the paired rx cell
+         if (linkInfo.linkoptions & (1 << FLAG_TX_S)) {
              flags[linkInfo.tsNum] = FALSE;
          }
          
@@ -564,11 +571,16 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
          }
          
       } 
-      
-      // remove un paired rx cells
-      for (i=0;i<SUPERFRAME_LENGTH;i++) {
-          if (flags[i] == TRUE) {
-              schedule_removeActiveSlot(i,&pkt->l2_nextORpreviousHop);
+      // remove unpaired rx cells
+      for (k=0;k<SUPERFRAME_LENGTH;k++) {
+          if (idmanager_getIsDAGroot()) {
+            printf("checking slot %d: ... \n",k);
+          }
+          if (flags[k] == TRUE && sixtop_getSix2sixState() == SIX_IDLE) {
+              schedule_removeActiveSlot(k,&pkt->l2_nextORpreviousHop);
+              if (idmanager_getIsDAGroot()) {
+                printf("    slot %d is removed: ... \n",k);
+              }
           }
       }
       i++;

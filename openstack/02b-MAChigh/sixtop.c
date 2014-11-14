@@ -1508,3 +1508,7 @@ void sixtop_markBlacklist(uint16_t slotOffset, uint16_t channelOffset, sixtop_bl
         leds_error_blink();
     }
 }
+
+uint8_t sixtop_getSix2sixState() {
+    return sixtop_vars.six2six_state;
+}
