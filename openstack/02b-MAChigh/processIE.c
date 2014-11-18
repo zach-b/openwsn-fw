@@ -462,7 +462,7 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
    
    myId = idmanager_getMyID(ADDR_64B);
    
-   printf("My ID is 0x%x 0x%x ... \n",myId->addr_64b[6],myId->addr_64b[7]);
+//   printf("My ID is 0x%x 0x%x ... \n",myId->addr_64b[6],myId->addr_64b[7]);
    
    // maintain the schedule, remove the un paired RX cells
    for (k=0;k<SUPERFRAME_LENGTH;k++) {
