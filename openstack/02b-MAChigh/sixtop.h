@@ -48,6 +48,7 @@ typedef enum {
 
 #define SIX2SIX_TIMEOUT_MS 5000
 #define MAXBLACKLISTLENGTH 20
+#define MAXLIFETIME        30  // in seconds
 
 //=========================== module variables ================================
 
@@ -67,7 +68,8 @@ typedef struct {
 typedef struct {
     bool used;
     uint16_t slotoffset;    // slotoffset of cell which can't be used
-    uint8_t channeloffset;  // channeloffset of cell wihch can't be used, if value=0xff, all channels (11~26) can'e be used
+    uint8_t  channeloffset;  // channeloffset of cell wihch can't be used, if value=0xff, all channels (11~26) can'e be used
+    uint8_t  lifetime;    // the life time of cell in blacklist (second)
 } sixtop_blacklist_element_vars_t;
 
 typedef struct {

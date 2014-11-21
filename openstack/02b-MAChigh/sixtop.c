@@ -114,7 +114,23 @@ bool          sixtop_areAvailableCellsToBeScheduled(
    uint8_t              bandwidth
 );
 
-bool          sixtop_insertToBlacklist(sixtop_blacklist_element_vars_t* element,sixtop_blacklist_type_t type);
+bool          sixtop_insertToBlacklist(
+   sixtop_blacklist_element_vars_t* element,
+   sixtop_blacklist_type_t type
+);
+
+uint8_t       sixtop_getBlacklistIndex(
+   uint16_t             slotoffset,
+   uint8_t              channeloffset,
+   sixtop_blacklist_type_t type
+);
+
+void          sixtop_updateBlacklistLife(
+   uint8_t              index,
+   sixtop_blacklist_type_t type
+);
+
+void          sixtop_cleanBlacklist();
 
 //=========================== public ==========================================
 
@@ -423,6 +439,50 @@ bool sixtop_isBlacklisted(uint16_t tsNum, uint16_t choffset, sixtop_blacklist_ty
     return state;
 }
 
+uint8_t sixtop_getBlacklistIndex(
+   uint16_t             slotoffset,
+   uint8_t              channeloffset,
+   sixtop_blacklist_type_t type
+) {
+    uint8_t i;
+    switch(type) {
+    case B_TX:
+        for(i=0;i<MAXBLACKLISTLENGTH;i++) {
+            if(sixtop_blacklist_vars.blacklistTx[i].slotoffset == slotoffset    &&
+               sixtop_blacklist_vars.blacklistTx[i].channeloffset == channeloffset) {
+                  break;
+            }
+        }
+        break;
+    case B_RX:
+        for(i=0;i<MAXBLACKLISTLENGTH;i++) {
+            if(sixtop_blacklist_vars.blacklistRx[i].slotoffset == slotoffset    &&
+               sixtop_blacklist_vars.blacklistRx[i].channeloffset == channeloffset) {
+                  break;
+            }
+        }
+        break;
+    default: 
+        // Never happened
+        leds_error_blink();
+    }
+    return i;
+}
+
+void sixtop_updateBlacklistLife(uint8_t index, sixtop_blacklist_type_t type) {
+    switch(type) {
+    case B_TX:
+        sixtop_blacklist_vars.blacklistTx[index].lifetime = MAXLIFETIME;
+        return;
+    case B_RX:
+        sixtop_blacklist_vars.blacklistRx[index].lifetime = MAXLIFETIME;
+        return;
+    default:
+        leds_error_blink();
+    }
+    return;
+}
+
 //======= from upper layer
 
 owerror_t sixtop_send(OpenQueueEntry_t *msg) {
@@ -726,6 +786,7 @@ void timer_sixtop_management_fired(void) {
       default:
          // called every second, except twice every ADVTIMEOUT seconds
          sixtop_sendKA();
+         sixtop_cleanBlacklist();
          break;
    }
 }
@@ -1461,9 +1522,12 @@ bool sixtop_areAvailableCellsToBeScheduled(
 
 bool sixtop_insertToBlacklist(sixtop_blacklist_element_vars_t* element, sixtop_blacklist_type_t type) {
     uint16_t i;
+    uint8_t  index;
     bool state = FALSE;
     
     if (sixtop_isBlacklisted(element->slotoffset,element->channeloffset,type) == TRUE) {
+        index = sixtop_getBlacklistIndex(element->slotoffset,element->channeloffset,type);
+        sixtop_updateBlacklistLife(index,type);
         return TRUE;
     }
     
@@ -1473,6 +1537,7 @@ bool sixtop_insertToBlacklist(sixtop_blacklist_element_vars_t* element, sixtop_b
                 sixtop_blacklist_vars.blacklistTx[i].used          = TRUE;
                 sixtop_blacklist_vars.blacklistTx[i].slotoffset    = element->slotoffset;
                 sixtop_blacklist_vars.blacklistTx[i].channeloffset = element->channeloffset;
+                sixtop_blacklist_vars.blacklistTx[i].lifetime   = MAXLIFETIME;
                 state = TRUE;
                 break;
             }
@@ -1484,6 +1549,7 @@ bool sixtop_insertToBlacklist(sixtop_blacklist_element_vars_t* element, sixtop_b
                     sixtop_blacklist_vars.blacklistRx[i].used          = TRUE;
                     sixtop_blacklist_vars.blacklistRx[i].slotoffset    = element->slotoffset;
                     sixtop_blacklist_vars.blacklistRx[i].channeloffset = element->channeloffset;
+                    sixtop_blacklist_vars.blacklistRx[i].lifetime   = MAXLIFETIME;
                     state = TRUE;
                     break;
                 }
@@ -1511,4 +1577,29 @@ void sixtop_markBlacklist(uint16_t slotOffset, uint16_t channelOffset, sixtop_bl
 
 uint8_t sixtop_getSix2sixState() {
     return sixtop_vars.six2six_state;
+}
+
+void sixtop_cleanBlacklist() {
+    uint8_t i;
+    for (i=0;i<MAXBLACKLISTLENGTH;i++) {
+        if (sixtop_blacklist_vars.blacklistTx[i].used == TRUE) {
+            if (sixtop_blacklist_vars.blacklistTx[i].lifetime - 1 == 0) {
+                sixtop_blacklist_vars.blacklistTx[i].used        = FALSE;
+                sixtop_blacklist_vars.blacklistTx[i].lifetime = 0;
+            } else {
+                sixtop_blacklist_vars.blacklistTx[i].lifetime--;
+            }
+        }
+    }
+    
+    for (i=0;i<MAXBLACKLISTLENGTH;i++) {
+        if (sixtop_blacklist_vars.blacklistRx[i].used == TRUE) {
+            if (sixtop_blacklist_vars.blacklistRx[i].lifetime - 1 == 0) {
+                sixtop_blacklist_vars.blacklistRx[i].used        = FALSE;
+                sixtop_blacklist_vars.blacklistRx[i].lifetime = 0;
+            } else {
+                sixtop_blacklist_vars.blacklistRx[i].lifetime--;
+            }
+        }
+    }
 }

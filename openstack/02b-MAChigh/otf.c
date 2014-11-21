@@ -53,7 +53,6 @@ void otf_maintenance_timer_cb(void) {
 void timer_otf_management_fired(void) {
     uint8_t currentPacketsInQueue;
     uint8_t currentAvgPacketsInQueue;
-    open_addr_t* address;
     uint8_t output[3];
     
     if (ieee154e_isSynch() == FALSE) {
@@ -120,7 +119,7 @@ void timer_otf_management_fired(void) {
                     // if there is no packet in queue, try to remove cells if existed
                     otf_removeCell_task();
                 } else {
-                    otf_addCell_task();
+//                    otf_addCell_task();
                 }
             } else {
                 // No possible to be here.
@@ -183,7 +182,6 @@ bool debugPrint_lastNumPkt() {
 uint8_t otf_getAvgNumOfPkt(uint8_t currentNumOfPkt) {
     uint8_t avg;
     uint8_t i;
-    open_addr_t* myId;
     
     avg = 0;
     
@@ -205,12 +203,6 @@ uint8_t otf_getAvgNumOfPkt(uint8_t currentNumOfPkt) {
     } else {
         avg = avg/SLIDE_WINDOW_SIZE + 1;
     }
-    
-    myId = idmanager_getMyID(ADDR_64B);
-   
-    printf("My ID is 0x%x 0x%x ... \n",myId->addr_64b[6],myId->addr_64b[7]);
-    
-    printf("average pkt is: %d\n",avg);
     
     return avg;
 }

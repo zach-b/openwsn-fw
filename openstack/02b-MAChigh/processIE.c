@@ -458,11 +458,6 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
    open_addr_t          neighbor;
    slotinfo_element_t   slotInfo;
    bool                 flags[SUPERFRAME_LENGTH];
-   open_addr_t*         myId;
-   
-   myId = idmanager_getMyID(ADDR_64B);
-   
-//   printf("My ID is 0x%x 0x%x ... \n",myId->addr_64b[6],myId->addr_64b[7]);
    
    // maintain the schedule, remove the un paired RX cells
    for (k=0;k<SUPERFRAME_LENGTH;k++) {
@@ -573,14 +568,8 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
       } 
       // remove unpaired rx cells
       for (k=0;k<SUPERFRAME_LENGTH;k++) {
-          if (idmanager_getIsDAGroot()) {
-            printf("checking slot %d: ... \n",k);
-          }
           if (flags[k] == TRUE && sixtop_getSix2sixState() == SIX_IDLE) {
               schedule_removeActiveSlot(k,&pkt->l2_nextORpreviousHop);
-              if (idmanager_getIsDAGroot()) {
-                printf("    slot %d is removed: ... \n",k);
-              }
           }
       }
       i++;
