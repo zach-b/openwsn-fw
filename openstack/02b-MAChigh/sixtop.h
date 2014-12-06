@@ -95,6 +95,7 @@ void      task_sixtopNotifReceive(void);
 // debugging
 bool      debugPrint_myDAGrank(void);
 bool      debugPrint_kaPeriod(void);
+bool      debugPrint_blacklist(void);
 // sixtop blacklist
 void      sixtop_markBlacklist(uint16_t slotOffset, uint16_t channelOffset, sixtop_blacklist_type_t type);
 uint8_t   sixtop_getSix2sixState();

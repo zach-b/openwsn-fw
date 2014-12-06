@@ -62,6 +62,10 @@ void timer_otf_management_fired(void) {
     if (neighbors_getNumNeighbors() == 0) {
         return;
     }
+    // don't run on dagroot
+    if (idmanager_getIsDAGroot()) {
+       return;
+    }
         
 #ifdef NEIGHBOR_ORIENTED 
     otf_vars.neighborRaw = (otf_vars.neighborRaw + 1)%MAXNUMNEIGHBORS;

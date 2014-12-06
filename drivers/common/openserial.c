@@ -326,6 +326,10 @@ void openserial_startOutput() {
          if (debugPrint_lastNumPkt()==TRUE) {
              break;
          }
+      case STATUS_BLACKLIST:
+         if (debugPrint_blacklist()==TRUE) {
+             break;
+         }
       default:
          DISABLE_INTERRUPTS();
          openserial_vars.debugPrintCounter=0;

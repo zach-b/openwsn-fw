@@ -697,6 +697,17 @@ bool debugPrint_kaPeriod() {
    return TRUE;
 }
 
+bool debugPrint_blacklist() {
+   // send status data over serial port
+   openserial_printStatus(
+      STATUS_BLACKLIST,
+      (uint8_t*)&sixtop_blacklist_vars,
+      sizeof(sixtop_blacklist_vars_t)
+   );
+   
+   return TRUE;
+}
+
 //=========================== private =========================================
 
 /**

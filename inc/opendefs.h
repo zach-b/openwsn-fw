@@ -100,8 +100,9 @@ enum {
    STATUS_QUEUE                        =  8,
    STATUS_NEIGHBORS                    =  9,
    STATUS_KAPERIOD                     = 10,
-   STATUS_LASTPKTNUM                   = 11,                               
-   STATUS_MAX                          = 12,
+   STATUS_LASTPKTNUM                   = 11,
+   STATUS_BLACKLIST                    = 12,
+   STATUS_MAX                          = 13,
 };
 
 //component identifiers

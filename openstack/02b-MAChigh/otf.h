@@ -14,7 +14,7 @@
 
 //=========================== define ==========================================
 
-#define QUEUE_WATCHER_PERIOD   10000  // unit: ms
+#define QUEUE_WATCHER_PERIOD   2000  // unit: ms
 #define SLIDE_WINDOW_SIZE      4      // slide window size 
 //#define NEIGHBOR_ORIENTED
 
