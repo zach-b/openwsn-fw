@@ -59,9 +59,11 @@ uint8_t openqueue_getToBeSentPackets() {
    
    num = 0;
    
-   // walk through queue and find entry owned by COMPONENT_SIXTOP_TO_IEEE802154E
+   // walk through queue and find entry created by COMPONENT_CSTORM or COMPONENT_FORWARDING
    for (i=0;i<QUEUELENGTH;i++) {
-      if (openqueue_vars.queue[i].owner == COMPONENT_SIXTOP_TO_IEEE802154E) {
+      if (openqueue_vars.queue[i].creator == COMPONENT_FORWARDING ||
+          openqueue_vars.queue[i].creator == COMPONENT_CSTORM
+      ) {
          num++;
       }
    }
@@ -275,7 +277,11 @@ OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
       // a neighbor is specified, look for a packet unicast to that neigbhbor
       for (i=0;i<QUEUELENGTH;i++) {
          if (openqueue_vars.queue[i].owner==COMPONENT_SIXTOP_TO_IEEE802154E &&
-            packetfunctions_sameAddress(toNeighbor,&openqueue_vars.queue[i].l2_nextORpreviousHop)) {
+            packetfunctions_sameAddress(toNeighbor,&openqueue_vars.queue[i].l2_nextORpreviousHop) &&
+                (openqueue_vars.queue[i].creator==COMPONENT_FORWARDING || 
+                 openqueue_vars.queue[i].creator==COMPONENT_CSTORM
+                )
+         ) {
             ENABLE_INTERRUPTS();
             return &openqueue_vars.queue[i];
          }
@@ -290,7 +296,9 @@ OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
                    openqueue_vars.queue[i].creator==COMPONENT_SIXTOP &&
                    packetfunctions_isBroadcastMulticast(&(openqueue_vars.queue[i].l2_nextORpreviousHop))==FALSE
                 )
-             )
+             ) && 
+             openqueue_vars.queue[i].creator!=COMPONENT_FORWARDING && 
+             openqueue_vars.queue[i].creator!=COMPONENT_CSTORM
             ) {
             ENABLE_INTERRUPTS();
             return &openqueue_vars.queue[i];

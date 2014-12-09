@@ -794,6 +794,9 @@ void timer_sixtop_management_fired(void) {
          // called every ADVTIMEOUT seconds
          neighbors_removeOld();
          break;
+      case 3:
+         schedule_cleanupDAGRxCell();
+         break;
       default:
          // called every second, except twice every ADVTIMEOUT seconds
          sixtop_sendKA();
@@ -1353,8 +1356,17 @@ bool sixtop_candidateAddCellList(
    while(numCandCells < 3) {
        rounds = 3;
        while(rounds > 0) {
-           i = (openrandom_get16b()&0x0f) + (openrandom_get16b()&0x07); // randomly select slotoffset 0~22 
-//           if (i == 101) {i = 100;} // when i is 101, we set it to 100. 
+           if (SUPERFRAME_LENGTH == 23) {
+               i = (openrandom_get16b()&0x0f) + (openrandom_get16b()&0x07); // randomly select slotoffset 0~22 
+           } else {
+               if (SUPERFRAME_LENGTH == 101) {
+                   i = (openrandom_get16b()&0x3f) + (openrandom_get16b()&0x1f) + (openrandom_get16b()&0x07);
+                   if (i == 101) {i = 100;} // when i is 101, we set it to 100. 
+               } else {
+                   // SUPERFRAME_LENGTH == 11
+                   i = (openrandom_get16b()&0x07) + (openrandom_get16b()&0x03);
+               }
+           }
            j = (openrandom_get16b()&0x0f); // randomly select channeloffset 0~15
            if (schedule_isSlotOffsetAvailable(i)==TRUE && sixtop_isBlacklisted(i,j,B_TX) == FALSE){
                cellList[numCandCells].tsNum       = i;

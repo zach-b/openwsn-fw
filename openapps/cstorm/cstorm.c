@@ -49,19 +49,20 @@ void cstorm_init(void) {
    cstorm_vars.desc.callbackSendDone      = &cstorm_sendDone;
    opencoap_register(&cstorm_vars.desc);
    
-
    //start a periodic timer
    //comment : not running by default
-   cstorm_vars.period           = 65534; 
+   cstorm_vars.period           = 5000; 
    
    cstorm_vars.timerId                    = opentimers_start(
       cstorm_vars.period,
       TIMER_PERIODIC,TIME_MS,
       cstorm_timer_cb
    );
-
-   //stop 
-   //opentimers_stop(cstorm_vars.timerId);
+   
+   if (idmanager_getMyID(ADDR_64B)->addr_64b[7] != 0x0a) {
+       //stop 
+       opentimers_stop(cstorm_vars.timerId);
+   }
    
 }
 
@@ -214,7 +215,7 @@ void cstorm_task_cb() {
    pkt->l4_destination_port = WKP_UDP_COAP;
    pkt->l3_destinationAdd.type = ADDR_128B;
    memcpy(&pkt->l3_destinationAdd.addr_128b[0],&dst_addr,16);
-   
+
    // send
    outcome = opencoap_send(
       pkt,

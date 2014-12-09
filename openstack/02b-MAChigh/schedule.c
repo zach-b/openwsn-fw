@@ -351,11 +351,21 @@ owerror_t schedule_removeActiveSlot(slotOffset_t slotOffset, open_addr_t* neighb
    // abort it could not find
    if (slotContainer>&schedule_vars.scheduleBuf[MAXACTIVESLOTS-1]) {
       ENABLE_INTERRUPTS();
-      openserial_printCritical(
-         COMPONENT_SCHEDULE,ERR_FREEING_ERROR,
-         (errorparameter_t)0,
-         (errorparameter_t)0
-      );
+      // when reserve a packet, in some cases, the addCell respond command was received by Tx side,
+      // but the rx side didn't get the ack (asymmetrical link). In such situation, Tx side get a tx cell,
+      // but rx didn't have one responded. when tx is going to remove this cell, rx side will not be able to 
+      // find it, this error would happend.
+#ifdef SIMULATION
+      printf("################################\n");
+      printf("#This is Mote :              %d#\n",idmanager_getMyID(ADDR_64B)->addr_64b[7]);
+      printf("#cell is not found! continue...#\n");
+      printf("################################\n");
+#endif
+//      openserial_printCritical(
+//         COMPONENT_SCHEDULE,ERR_FREEING_ERROR,
+//         (errorparameter_t)0,
+//         (errorparameter_t)0
+//      );
       return E_FAIL;
    }
    
@@ -730,3 +740,48 @@ void timer_schedule_management_fired() {
        }
    }
 }
+
+void schedule_printf(void) {
+    uint8_t i;
+#ifdef SIMULATION
+    for (i=0;i<MAXACTIVESLOTS;i++) {
+        printf("ts-%d ch-%d type-%d| ",\
+            schedule_vars.scheduleBuf[i].slotOffset,\
+            schedule_vars.scheduleBuf[i].channelOffset,\
+            schedule_vars.scheduleBuf[i].type);
+    }
+    printf("\n\n");
+#endif
+}
+
+void schedule_cleanupDAGRxCell() {
+    uint8_t i;
+    //only for dagroot
+    if (idmanager_getIsDAGroot()==FALSE) {
+        return;
+    }
+    
+    for (i=0;i<MAXACTIVESLOTS;i++) {
+        if (schedule_vars.scheduleBuf[i].type == CELLTYPE_RX) {
+            if (ieee154e_asnDiff(&schedule_vars.scheduleBuf[i].lastUsedAsn)>3600) {
+#ifdef SIMULATION
+                printf("\n\nCell %d is removed!\n\n",schedule_vars.scheduleBuf[i].slotOffset);
+#endif
+                schedule_removeActiveSlot(schedule_vars.scheduleBuf[i].slotOffset, \
+                    &schedule_vars.scheduleBuf[i].neighbor);
+            }
+        }
+    }
+}
+#ifdef EXPERIMENT
+uint8_t schedule_getNumOfCells(cellType_t type) {
+    uint8_t numOfCells = 0;
+    uint8_t i;
+    for (i=0;i<MAXACTIVESLOTS;i++) {
+        if(schedule_vars.scheduleBuf[i].type == type) {
+            numOfCells++;
+        }
+    }
+    return numOfCells;
+}
+#endif

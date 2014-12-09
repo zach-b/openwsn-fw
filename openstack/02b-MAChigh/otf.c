@@ -123,7 +123,7 @@ void timer_otf_management_fired(void) {
                     // if there is no packet in queue, try to remove cells if existed
                     otf_removeCell_task();
                 } else {
-//                    otf_addCell_task();
+                    otf_addCell_task();
                 }
             } else {
                 // No possible to be here.

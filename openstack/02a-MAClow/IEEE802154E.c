@@ -752,6 +752,9 @@ port_INLINE void activity_ti1ORri1() {
    open_addr_t neighbor;
    uint8_t     i;
    sync_IE_ht  sync_IE;
+#ifdef EXPERIMENT
+   uint8_t     temp[8];
+#endif
 
    // increment ASN (do this first so debug pins are in sync)
    incrementAsnOffset();
@@ -810,6 +813,27 @@ port_INLINE void activity_ti1ORri1() {
       endSlot();
       //start outputing serial
       openserial_startOutput();
+#ifdef EXPERIMENT
+      temp[0] = schedule_getNumOfCells(CELLTYPE_TX);
+      temp[1] = schedule_getNumOfCells(CELLTYPE_RX);
+      temp[2] = openqueue_getToBeSentPackets();
+      temp[3] = ieee154e_vars.asn.byte4;
+      packetfunctions_htons(ieee154e_vars.asn.bytes2and3,&temp[4]);
+      packetfunctions_htons(ieee154e_vars.asn.bytes0and1,&temp[6]);
+      openserial_printStatus(
+          0x0F,
+          &temp[0],
+          sizeof(temp)
+      );
+#endif
+      
+      if (ieee154e_vars.slotOffset == SUPERFRAME_LENGTH-1) {
+          openserial_printStatus(
+              STATUS_SCHEDULE,
+              (uint8_t*)&temp,
+              sizeof(debugScheduleEntry_t)
+          );
+      }
       return;
    }
    
@@ -856,23 +880,6 @@ port_INLINE void activity_ti1ORri1() {
             ieee154e_vars.dataToSend = NULL;
          }
          if (ieee154e_vars.dataToSend!=NULL) {   // I have a packet to send
-             /*
-            if ( // only packets created by COMPONENT_FORWARDING or COMPONENT_CSTORM \
-                 can and only can be sent on TX type slot
-                 ((
-                  ieee154e_vars.dataToSend->creator == COMPONENT_FORWARDING || \
-                  ieee154e_vars.dataToSend->creator == COMPONENT_CSTORM    
-                  ) && cellType == CELLTYPE_TXRX )                          || \
-                 ((
-                  ieee154e_vars.dataToSend->creator != COMPONENT_FORWARDING && \
-                  ieee154e_vars.dataToSend->creator != COMPONENT_CSTORM    
-                  ) && cellType == CELLTYPE_TX )
-            ) {
-                endSlot();
-                break;
-            } 
-             */
-             
             // change state
             changeState(S_TXDATAOFFSET);
             // change owner

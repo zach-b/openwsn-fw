@@ -21,7 +21,7 @@ The superframe repears over time and can be arbitrarly long.
 #define SUPERFRAME_LENGTH    23 //should be 101
 
 #define NUMADVSLOTS          1
-#define NUMSHAREDTXRX        1 
+#define NUMSHAREDTXRX        5
 #define NUMSERIALRX          3
 
 /**
@@ -182,7 +182,11 @@ void               schedule_indicateTx(
                         asn_t*    asnTimestamp,
                         bool      succesfullTx
                    );
-
+void               schedule_printf(void);
+void               schedule_cleanupDAGRxCell(void);
+#ifdef EXPERIMENT
+uint8_t            schedule_getNumOfCells(cellType_t type);
+#endif
 /**
 \}
 \}
