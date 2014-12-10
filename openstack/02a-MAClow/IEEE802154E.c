@@ -826,14 +826,6 @@ port_INLINE void activity_ti1ORri1() {
           sizeof(temp)
       );
 #endif
-      
-      if (ieee154e_vars.slotOffset == SUPERFRAME_LENGTH-1) {
-          openserial_printStatus(
-              STATUS_SCHEDULE,
-              (uint8_t*)&temp,
-              sizeof(debugScheduleEntry_t)
-          );
-      }
       return;
    }
    
