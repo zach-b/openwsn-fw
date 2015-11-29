@@ -108,5 +108,9 @@ void board_sleep()
 
 void board_reset()
 {
+    __ASM("MOV R0, #1");
+    __ASM("MSR FAULTMASK, R0");
+    SCB->AIRCR = 0x05FA0004;
+    for(;;); 
 }
 

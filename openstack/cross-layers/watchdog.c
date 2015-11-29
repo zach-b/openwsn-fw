@@ -1,6 +1,6 @@
 #include "opendefs.h"
 #include "watchdog.h"
-#include "ieee802154e.h"
+#include "IEEE802154E.h"
 #include "board.h"
 
 //=========================== definition ======================================

@@ -113,7 +113,11 @@ LoopFillZerobss:
     .section	.text.Default_Handler,"ax",%progbits
 Default_Handler:
 Infinite_Loop:
-	b	Infinite_Loop
+        MOV R0, #1
+        MSR FAULTMASK, R0
+        LDR R0, =0xE000ED0C
+        LDR R1, =0x05FA0004
+        STR R1, [R0]
 	.size	Default_Handler, .-Default_Handler
 /******************************************************************************
 *
