@@ -98,7 +98,7 @@ void otf_bandwidthEstimate_task(void){
     bw_outgoing = schedule_getNumOfSlotsByType(CELLTYPE_TX);
     bw_incoming = schedule_getNumOfSlotsByType(CELLTYPE_RX);
     // number of packet generated per second (slotframe duration 15ms*101=1515ms)
-    bw_self     = 1515/cstorm_getPeriod();
+    bw_self     = 1515/cstorm_getPeriod()+1;
     
     if (
         idmanager_getMyID(ADDR_64B)->addr_64b[7] != 0x06 && \
@@ -108,11 +108,11 @@ void otf_bandwidthEstimate_task(void){
     ) {
         // those motes has stopped to generate packets
         bw_self = 0; 
-    }    
+    }
     
-    printf("OTF: Mote %d ",idmanager_getMyID(ADDR_16B)->addr_16b[1]);
-    printf("OTF: outgoing = %d, incoming = %d, self = %d\n",
-           bw_outgoing,bw_incoming,bw_self);
+//    printf("OTF: Mote %d ",idmanager_getMyID(ADDR_16B)->addr_16b[1]);
+//    printf("OTF: outgoing = %d, incoming = %d, self = %d\n",
+//           bw_outgoing,bw_incoming,bw_self);
     
     if (bw_outgoing < bw_incoming+bw_self){
         sixtop_addCells(
