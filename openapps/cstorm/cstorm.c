@@ -61,7 +61,7 @@ void cstorm_init(void) {
    cstorm_vars.period           = SLOTFRAME_LENGTH * SLOTDURATION_MS / PACKET_PER_SLOTFRAME;
 //   cstorm_vars.period           = SLOTFRAME_LENGTH * SLOTDURATION_MS / (1+openrandom_get16b()%6); 
    cstorm_vars.timerId          = opentimers_start(
-      cstorm_vars.period-0x7f+(openrandom_get16b()&0xff),
+      cstorm_vars.period,
       TIMER_PERIODIC,TIME_MS,
       cstorm_timer_cb
    );
@@ -158,11 +158,9 @@ owerror_t cstorm_receive(
 void cstorm_timer_cb(opentimer_id_t id){
    scheduler_push_task(cstorm_task_cb,TASKPRIO_COAP);
    
-   opentimers_setPeriod(
-      cstorm_vars.timerId,
-      TIME_MS,
-      cstorm_vars.period-0x7f+(openrandom_get16b()&0xff)
-   );
+   if (cstorm.packetId[1]>5){
+      cstorm_stop();
+   }
 }
 
 void cstorm_task_cb() {
