@@ -158,7 +158,7 @@ owerror_t cstorm_receive(
 void cstorm_timer_cb(opentimer_id_t id){
    scheduler_push_task(cstorm_task_cb,TASKPRIO_COAP);
    
-   if (cstorm.packetId[1]>5){
+   if (cstorm_vars.packetId[1]>5){
       cstorm_stop();
    }
 }
