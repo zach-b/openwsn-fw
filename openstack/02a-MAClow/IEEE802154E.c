@@ -2044,6 +2044,7 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
 
 void notif_receive(OpenQueueEntry_t* packetReceived) {
    uint8_t len;
+   uint8_t buffer[5];
    len = packetReceived->length;
    // record the current ASN
    memcpy(&packetReceived->l2_asn, &ieee154e_vars.asn, sizeof(asn_t));
@@ -2060,6 +2061,12 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
                idmanager_getMyID(ADDR_64B)->addr_64b[7],
                packetReceived->payload[len-9]*256+packetReceived->payload[len-8],
                ieee154e_vars.asn.bytes2and3*65536+ieee154e_vars.asn.bytes0and1);
+           buffer[0] = idmanager_getMyID(ADDR_64B)->addr_64b[7];
+           buffer[1] = packetReceived->payload[len-9];
+           buffer[2] = packetReceived->payload[len-8];
+           buffer[3] = (uint8_t)(ieee154e_vars.asn.bytes0and1) & 0xff;
+           buffer[4] = (uint8_t)(ieee154e_vars.asn.bytes0and1>>8) & 0xff;
+           openserial_printData(buffer,5);
        }
    }
    // associate this packet with the virtual component

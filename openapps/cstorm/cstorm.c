@@ -157,10 +157,11 @@ owerror_t cstorm_receive(
 */
 void cstorm_timer_cb(opentimer_id_t id){
    scheduler_push_task(cstorm_task_cb,TASKPRIO_COAP);
-   
-   if (cstorm_vars.packetId[1]>5){
-      cstorm_stop();
-   }
+   opentimers_setPeriod(
+      cstorm_vars.timerId,
+      TIME_MS,
+      cstorm_vars.period + (openrandom_get16b()&0xff) - 0x7f
+   );
 }
 
 void cstorm_task_cb() {
@@ -187,7 +188,16 @@ void cstorm_task_cb() {
 //       return;
 //   }
    
+   
    // if you get here, send a packet
+   
+   cstorm_vars.packetId[1]++;
+   
+   if (cstorm_vars.packetId[1]>40){
+      opentimers_stop(cstorm_vars.timerId);
+   } else {
+      return;
+   }
    
    // get a packet
    pkt = openqueue_getFreePacketBuffer(COMPONENT_CSTORM);
@@ -209,8 +219,7 @@ void cstorm_task_cb() {
    // add payload
    packetfunctions_reserveHeaderSize(pkt,sizeof(cstorm_payload)-1);
    memcpy(&pkt->payload[0],cstorm_payload,sizeof(cstorm_payload)-1);
-   
-   cstorm_vars.packetId[1]++;
+
    if (cstorm_vars.packetId[1]==0){
        cstorm_vars.packetId[0]++;
    }
