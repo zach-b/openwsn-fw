@@ -881,6 +881,7 @@
 //
 // The following are defines for the bit fields in the 
 // AES_DMAC_CH0_EXTADDR register.
+// AES_DMAC_CH0_EXTADDR register.
 //
 //*****************************************************************************
 #define AES_DMAC_CH0_EXTADDR_ADDR_M \

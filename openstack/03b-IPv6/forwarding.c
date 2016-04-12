@@ -12,6 +12,7 @@
 #include "opentcp.h"
 #include "debugpins.h"
 #include "scheduler.h"
+#include "../../build/python_gcc/inc/opendefs.h"
 
 //=========================== variables =======================================
 
@@ -407,7 +408,34 @@ owerror_t forwarding_send_internal_RoutingTable(
    if (ipv6_outer_header->src.type != ADDR_NONE){
       packetfunctions_tossHeader(msg,ipv6_outer_header->header_length);
    }
-   
+
+/*
+   // ZACH : add a custom BIER-RH and send to Forwarding...
+   uint8_t              BIER_copy[127];
+   uint8_t              BIER_length;
+   memset(&BIER_copy[0],0,127);
+   BIER_length = 0;
+   BIER_copy[0] = 0xa1;
+   BIER_copy[1] = 0x0f;
+   BIER_copy[2] = 0x01;
+   BIER_copy[3] = 0x23;
+   BIER_copy[4] = 0x45;
+   BIER_copy[5] = 0x67;
+   BIER_length = 6;
+
+
+   return iphc_sendFromForwarding(
+      msg,
+      ipv6_outer_header,
+      ipv6_inner_header,
+      rpl_option,
+      flow_label,
+      BIER_copy,  // no rh3
+      BIER_length,
+      fw_SendOrfw_Rcv
+   );
+*/
+
    // send to next lower layer
    return iphc_sendFromForwarding(
       msg,
@@ -416,6 +444,8 @@ owerror_t forwarding_send_internal_RoutingTable(
       rpl_option,
       flow_label,
       NULL,  // no rh3
+      0,
+      NULL,  // no bier
       0,
       fw_SendOrfw_Rcv
    );
@@ -455,9 +485,14 @@ owerror_t forwarding_send_internal_SourceRouting(
     
     uint8_t              RH3_copy[127];
     uint8_t              RH3_length;
+
+    uint8_t              BIER_copy[130];
+    uint8_t              BIER_length;
     
     memset(&RH3_copy[0],0,127);
+    memset(&BIER_copy[0],0,130);
     RH3_length = 0;
+    BIER_length = 0;
     memcpy(&msg->l3_destinationAdd,&ipv6_inner_header->dest,sizeof(open_addr_t));
     memcpy(&msg->l3_sourceAdd,&ipv6_inner_header->src,sizeof(open_addr_t));
     
@@ -475,6 +510,20 @@ owerror_t forwarding_send_internal_SourceRouting(
     
     temp_8b = *((uint8_t*)(msg->payload)+hlen);
     type    = *((uint8_t*)(msg->payload)+hlen+1);
+
+    // ZACH : check for BIER header :
+    if(type==BIER_6LOTH_TYPE){
+        //get bitmap :
+        size = temp_8b & RH3_6LOTH_SIZE_MASK;
+        uint16_t bitmap[(size+1)*2];
+        memcpy(&bitmap, &msg->payload+2, (size+1)*4);
+        //send info to serial
+        openserial_printInfo(COMPONENT_FORWARDING, ERR_BIERHEADER, bitmap[0], bitmap[1]);
+        //copy BIER header before tossing it :
+        BIER_length = 2+4*(size+1);
+        memcpy(&BIER_copy[0],msg->payload,BIER_length);
+        packetfunctions_tossHeader(msg,BIER_length);
+    }
     
     hlen += 2;
     // get the first address
@@ -714,6 +763,8 @@ owerror_t forwarding_send_internal_SourceRouting(
         &ipv6_outer_header->flow_label,
         &RH3_copy[0],
         RH3_length,
+        &BIER_copy[0],
+        BIER_length,
         PCKTFORWARD
     );
 }

@@ -63,6 +63,8 @@ owerror_t iphc_sendFromForwarding(
     uint32_t*         flow_label,
     uint8_t*          rh3_copy,
     uint8_t           rh3_length,
+    uint8_t*          bier_copy,
+    uint8_t           bier_length,
     uint8_t           fw_SendOrfw_Rcv
     ) {
     open_addr_t  temp_dest_prefix;
@@ -183,6 +185,13 @@ owerror_t iphc_sendFromForwarding(
         packetfunctions_reserveHeaderSize(msg,rh3_length);
         memcpy(&msg->payload[0],&rh3_copy[0],rh3_length);
     }
+
+    // copy BIER back if length > 0
+    if (bier_length > 0){
+        packetfunctions_reserveHeaderSize(msg,bier_length);
+        memcpy(&msg->payload[0],&bier_copy[0],bier_length);
+    }
+
     
     // if there are 6LoRH in the packet, add page dispatch no.1
     if (
@@ -562,6 +571,14 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
     if(page==1){
         extention_header_length = 0;
         temp_8b = *((uint8_t*)(msg->payload)+*page_length+extention_header_length);
+        // Consider the case of a BIER header before RH3s
+        if ((temp_8b&FORMAT_6LORH_MASK) == ELECTIVE_6LoRH) {
+            lorh_type = *((uint8_t*)(msg->payload)+*page_length+extention_header_length+1);
+            if  (lorh_type== BIER_6LOTH_TYPE){
+                size = temp_8b & RH3_6LOTH_SIZE_MASK;
+                extention_header_length += 2 + 4 * (size+1);
+            }
+        }
         while ((temp_8b&FORMAT_6LORH_MASK) == CRITICAL_6LORH){
             lorh_type = *((uint8_t*)(msg->payload)+*page_length+extention_header_length+1);
             if(lorh_type<=RH3_6LOTH_TYPE_4){

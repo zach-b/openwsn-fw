@@ -144,6 +144,7 @@ enum TYPE_6LORH_enums{
     RH3_6LOTH_TYPE_4         = 0x04,
     RPI_6LOTH_TYPE           = 0x05,
     IPECAP_6LOTH_TYPE        = 0x06,
+    BIER_6LOTH_TYPE          = 0x0f,
 };
 
 enum SIZE_6LORH_RH3_enums{
@@ -226,6 +227,8 @@ owerror_t     iphc_sendFromForwarding(
    uint32_t*            flow_label,
    uint8_t*             rh3_copy,
    uint8_t              rh3_length,
+   uint8_t*             bier_copy,
+   uint8_t              bier_length,
    uint8_t              fw_SendOrfw_Rcv
 );
 owerror_t     iphc_sendFromBridge(OpenQueueEntry_t *msg);
