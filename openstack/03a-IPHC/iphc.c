@@ -548,10 +548,11 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
     
     uint8_t         extention_header_length;
     
-    *page_length                      = 0;
+    *page_length                     = 0;
     extention_header_length          = 0;
     rh3_index                        = 0;
     ipv6_outer_header->header_length = 0;
+    ipv6_inner_header->bier_length   = 0;
     ipv6_inner_header->header_length = 0;
 
     // four steps to retrieve:
@@ -576,7 +577,21 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
             lorh_type = *((uint8_t*)(msg->payload)+*page_length+extention_header_length+1);
             if  (lorh_type== BIER_6LOTH_TYPE){
                 size = temp_8b & RH3_6LOTH_SIZE_MASK;
+                //get bitmap :
+                uint16_t bitmap[(size+1)*2];
+                memcpy(&bitmap[0], (msg->payload)+*page_length+extention_header_length+2, (size+1)*4);
+                //send info to serial
+                openserial_printInfo(
+                        COMPONENT_IPHC,
+                        ERR_BIERHEADER,
+                        (errorparameter_t)bitmap[0],
+                        (errorparameter_t)bitmap[1]
+                );
+
+                ipv6_outer_header->bier_length = 2+(size+1)*4; // signal that the header is not empty
+
                 extention_header_length += 2 + 4 * (size+1);
+                temp_8b = *((uint8_t*)(msg->payload)+*page_length+extention_header_length);
             }
         }
         while ((temp_8b&FORMAT_6LORH_MASK) == CRITICAL_6LORH){

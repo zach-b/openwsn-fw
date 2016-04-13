@@ -170,6 +170,8 @@ typedef struct {
    open_addr_t src;
    open_addr_t dest;
    uint8_t     header_length;          ///< Counter for internal use
+   uint8_t     bier_length;            ///< size of the BIER header (needed to remove it when forwarding the packet to
+                                       ///  TRAN when it is for me)
 } ipv6_header_iht; // iht for "internal header type"
 
 /**

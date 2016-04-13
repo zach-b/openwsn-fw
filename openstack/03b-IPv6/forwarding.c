@@ -12,7 +12,6 @@
 #include "opentcp.h"
 #include "debugpins.h"
 #include "scheduler.h"
-#include "../../build/python_gcc/inc/opendefs.h"
 
 //=========================== variables =======================================
 
@@ -253,8 +252,8 @@ void forwarding_receive(
         &&
         ipv6_outer_header->next_header!=IANA_IPv6ROUTE
     ) {
-        if (ipv6_outer_header->src.type != ADDR_NONE){
-            packetfunctions_tossHeader(msg,ipv6_outer_header->header_length);
+        if (ipv6_outer_header->src.type != ADDR_NONE || ipv6_outer_header->bier_length){
+            packetfunctions_tossHeader(msg,ipv6_outer_header->header_length+ipv6_outer_header->bier_length);
         }
         // this packet is for me, no source routing header // toss iphc inner header
         packetfunctions_tossHeader(msg,ipv6_inner_header->header_length);
@@ -515,14 +514,13 @@ owerror_t forwarding_send_internal_SourceRouting(
     if(type==BIER_6LOTH_TYPE){
         //get bitmap :
         size = temp_8b & RH3_6LOTH_SIZE_MASK;
-        uint16_t bitmap[(size+1)*2];
-        memcpy(&bitmap, &msg->payload+2, (size+1)*4);
-        //send info to serial
-        openserial_printInfo(COMPONENT_FORWARDING, ERR_BIERHEADER, bitmap[0], bitmap[1]);
         //copy BIER header before tossing it :
         BIER_length = 2+4*(size+1);
-        memcpy(&BIER_copy[0],msg->payload,BIER_length);
+        memcpy(&BIER_copy[0],msg->payload, BIER_length);
         packetfunctions_tossHeader(msg,BIER_length);
+
+        temp_8b = *((uint8_t*)(msg->payload)+hlen);
+        type    = *((uint8_t*)(msg->payload)+hlen+1);
     }
     
     hlen += 2;
