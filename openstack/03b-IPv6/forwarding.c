@@ -408,33 +408,6 @@ owerror_t forwarding_send_internal_RoutingTable(
       packetfunctions_tossHeader(msg,ipv6_outer_header->header_length);
    }
 
-/*
-   // ZACH : add a custom BIER-RH and send to Forwarding...
-   uint8_t              BIER_copy[127];
-   uint8_t              BIER_length;
-   memset(&BIER_copy[0],0,127);
-   BIER_length = 0;
-   BIER_copy[0] = 0xa1;
-   BIER_copy[1] = 0x0f;
-   BIER_copy[2] = 0x01;
-   BIER_copy[3] = 0x23;
-   BIER_copy[4] = 0x45;
-   BIER_copy[5] = 0x67;
-   BIER_length = 6;
-
-
-   return iphc_sendFromForwarding(
-      msg,
-      ipv6_outer_header,
-      ipv6_inner_header,
-      rpl_option,
-      flow_label,
-      BIER_copy,  // no rh3
-      BIER_length,
-      fw_SendOrfw_Rcv
-   );
-*/
-
    // send to next lower layer
    return iphc_sendFromForwarding(
       msg,
