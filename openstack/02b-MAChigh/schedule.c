@@ -53,6 +53,85 @@ void schedule_init() {
          &temp_neighbor                         // neighbor
       );
    }
+   //Add our hardcoded slots depending on the address :
+   temp_neighbor.type = ADDR_64B;
+   memcpy(&temp_neighbor.addr_64b, idmanager_getMyID(ADDR_64B)->addr_64b, 8);
+   switch (idmanager_getMyID(ADDR_64B)->addr_64b[7]) {
+   	   case 1 :
+   		   break;
+   	   case 2 :
+   		   temp_neighbor.addr_64b[7] = 0x03;
+   		   schedule_addActiveSlot(
+   		         running_slotOffset,                    // slot offset
+   		         CELLTYPE_TX,                  		    // type of slot
+   		         FALSE,                                 // shared?
+   		         0,                                     // channel offset
+   		         &temp_neighbor                         // neighbor
+   		   );
+   		   temp_neighbor.addr_64b[7] = 0x04;
+   		   schedule_addActiveSlot(
+   		   		 running_slotOffset+1,                    // slot offset
+   		   		 CELLTYPE_TX,                	        // type of slot
+   		   		 FALSE,                                 // shared?
+   		   		 0,                                     // channel offset
+   		   		 &temp_neighbor                         // neighbor
+   		   );
+   		   break;
+   	   case 3 :
+   		   temp_neighbor.addr_64b[7] = 0x02;
+   		   schedule_addActiveSlot(
+   		         running_slotOffset,                    // slot offset
+   		         CELLTYPE_RX,                     // type of slot
+   		         FALSE,                                 // shared?
+   		         0,                                     // channel offset
+   		         &temp_neighbor                         // neighbor
+   		   );
+   		   temp_neighbor.addr_64b[7] = 0x05;
+   		   schedule_addActiveSlot(
+   		         running_slotOffset+2,                    // slot offset
+   		         CELLTYPE_TX,                     // type of slot
+   		         FALSE,                                 // shared?
+   		         0,                                     // channel offset
+   		         &temp_neighbor                         // neighbor
+   		   );
+   		   break;
+   	   case 4 :
+   	   		   temp_neighbor.addr_64b[7] = 0x02;
+   	   		   schedule_addActiveSlot(
+   	   		         running_slotOffset+1,                    // slot offset
+   	   		         CELLTYPE_RX,                     // type of slot
+   	   		         FALSE,                                 // shared?
+   	   		         0,                                     // channel offset
+   	   		         &temp_neighbor                         // neighbor
+   	   		   );
+   	   		   temp_neighbor.addr_64b[7] = 0x05;
+   	   		   schedule_addActiveSlot(
+   	   		         running_slotOffset+3,                    // slot offset
+   	   		         CELLTYPE_TX,                     // type of slot
+   	   		         FALSE,                                 // shared?
+   	   		         0,                                     // channel offset
+   	   		         &temp_neighbor                         // neighbor
+   	   		   );
+   	   		   break;
+   	   case 5 :
+   	   	   		   temp_neighbor.addr_64b[7] = 0x03;
+   	   	   		   schedule_addActiveSlot(
+   	   	   		         running_slotOffset+2,                    // slot offset
+   	   	   		         CELLTYPE_RX,                     // type of slot
+   	   	   		         FALSE,                                 // shared?
+   	   	   		         0,                                     // channel offset
+   	   	   		         &temp_neighbor                         // neighbor
+   	   	   		   );
+   	   	   		   temp_neighbor.addr_64b[7] = 0x04;
+   	   	   		   schedule_addActiveSlot(
+   	   	   		         running_slotOffset+3,                  // slot offset
+   	   	   		         CELLTYPE_RX,                           // type of slot
+   	   	   		         FALSE,                                 // shared?
+   	   	   		         0,                                     // channel offset
+   	   	   		         &temp_neighbor                         // neighbor
+   	   	   		   );
+   	   	   		   break;
+   }
 }
 
 /**
