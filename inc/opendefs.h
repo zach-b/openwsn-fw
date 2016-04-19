@@ -249,7 +249,7 @@ enum {
    ERR_SIXTOP_COUNT                    = 0x3d, // there are {0} cells to request mote
    ERR_SIXTOP_LIST                     = 0x3e, // the cells reserved to request mote contains slot {0} and slot {1}
 
-   ERR_BIERHEADER                      = 0x3f, // Signals that a bierheader was handled by forwarding. first 32 bits of the bitmap are {0} and {1}
+   ERR_BIERHEADER                      = 0x3f, // Signals that a bierheader was handled by IPHC. first 32 bits of the bitmap are {0} and {1}
 };
 
 //=========================== typedef =========================================

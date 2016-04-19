@@ -25,6 +25,7 @@ void iphc_retrieveIPv6Header(
    ipv6_header_iht* ipv6_inner_header,
    uint8_t*         page_length
 );
+
 uint8_t iphc_retrieveIphcHeader(open_addr_t* temp_addr_16b,
    open_addr_t*         temp_addr_64b,
    uint8_t*             dispatch,
@@ -83,7 +84,7 @@ owerror_t iphc_sendFromForwarding(
                             (errorparameter_t)0);
         return E_FAIL;
     }
-   
+
     //discard the packet.. hop limit reached.
     if (ipv6_outer_header->src.type != ADDR_NONE){
         // there is IPinIP check hop limit in ip in ip encapsulation
@@ -174,6 +175,7 @@ owerror_t iphc_sendFromForwarding(
     //prepend Option hop by hop header except when src routing and dst is not 0xffff
     //-- this is a little trick as src routing is using an option header set to 0x00
     if (
+    	bier_length == 0 &&
         rpl_option->optionType==RPL_HOPBYHOP_HEADER_OPTION_TYPE && 
         packetfunctions_isBroadcastMulticast(&(msg->l3_destinationAdd))==FALSE
     ){
@@ -526,6 +528,7 @@ owerror_t iphc_prependIPv6Header(
    return E_SUCCESS;
 }
 
+
 /**
 \brief Retrieve an IPv6 header from a message.
 */
@@ -592,6 +595,7 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
 
                 extention_header_length += 2 + 4 * (size+1);
                 temp_8b = *((uint8_t*)(msg->payload)+*page_length+extention_header_length);
+                ipv6_outer_header->next_header = IANA_IPv6ROUTE;
             }
         }
         while ((temp_8b&FORMAT_6LORH_MASK) == CRITICAL_6LORH){

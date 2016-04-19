@@ -28,6 +28,8 @@ enum {
    FLAG_MASK       = 0x1F,
 };
 
+#define BIERMAPLENGTH 3
+
 //=========================== typedef =========================================
 
 /**
@@ -47,7 +49,19 @@ typedef struct {
 } rpl_routing_ht;
 END_PACK
 
+typedef struct {
+	uint8_t	  index;
+    uint8_t	  addr_64b[8];
+} bierMapEntry_t;
+
+typedef struct {
+	bierMapEntry_t bierMap[BIERMAPLENGTH];
+} biermap_vars_t;
+
+
 //=========================== variables =======================================
+
+biermap_vars_t biermap;
 
 //=========================== prototypes ======================================
 

@@ -47,6 +47,38 @@ void      forwarding_createRplOption(
 \brief Initialize this module.
 */
 void forwarding_init() {
+	open_addr_t     temp_neighbor;
+	uint8_t i;
+	//reset the biermap :
+	for (i=0;i<BIERMAPLENGTH;i++){
+		biermap.bierMap[0].index = 0;
+	}
+
+	// write our hardcoded biermap :
+	temp_neighbor.type = ADDR_64B;
+	memcpy(&temp_neighbor.addr_64b, idmanager_getMyID(ADDR_64B)->addr_64b, 8);
+	switch (idmanager_getMyID(ADDR_64B)->addr_64b[7]) {
+		case 1 :
+			break;
+		case 2 :
+			biermap.bierMap[0].index = 1;
+	   		temp_neighbor.addr_64b[7] = 0x03;
+			memcpy(biermap.bierMap[0].addr_64b, &temp_neighbor.addr_64b, 8);
+			biermap.bierMap[1].index = 2;
+	   		temp_neighbor.addr_64b[7] = 0x04;
+			memcpy(biermap.bierMap[1].addr_64b, &temp_neighbor.addr_64b, 8);
+			break;
+		case 3 :
+			biermap.bierMap[0].index = 3;
+	   		temp_neighbor.addr_64b[7] = 0x05;
+			memcpy(biermap.bierMap[0].addr_64b, &temp_neighbor.addr_64b, 8);
+			break;
+		case 4 :
+			biermap.bierMap[0].index = 4;
+	   		temp_neighbor.addr_64b[7] = 0x05;
+			memcpy(biermap.bierMap[0].addr_64b, &temp_neighbor.addr_64b, 8);
+			break;
+	}
 }
 
 /**
@@ -487,10 +519,46 @@ owerror_t forwarding_send_internal_SourceRouting(
     if(type==BIER_6LOTH_TYPE){
         //get bitmap :
         size = temp_8b & RH3_6LOTH_SIZE_MASK;
+    	uint32_t bitmap[(size+1)];
+    	memcpy(&bitmap[0], (msg->payload)+hlen+2, (size+1)*4);
+
         //copy BIER header before tossing it :
         BIER_length = 2+4*(size+1);
         memcpy(&BIER_copy[0],msg->payload, BIER_length);
         packetfunctions_tossHeader(msg,BIER_length);
+
+        // toss the IP in IP 6LoRH
+        packetfunctions_tossHeader(msg, ipv6_outer_header->header_length);
+
+        // forward according to the bitmap
+        uint8_t i;
+        for (i=0; i<BIERMAPLENGTH; i++){
+        	if (biermap.bierMap[i].index){
+        		// check if the bit is set
+        		if(bitmap[biermap.bierMap[i].index/32] & (uint32_t)1 << (32 - (biermap.bierMap[i].index%32))) {
+        			// reset the bit
+        			bitmap[biermap.bierMap[i].index/32] = bitmap[biermap.bierMap[i].index/32] & (!( (uint32_t)1 << (32 - (biermap.bierMap[i].index%32)) ));
+        			// copy the bitmap back to the header
+        			memcpy(&BIER_copy[0] + 2, &bitmap[0], (size+1)*4);
+        			// forward the message
+        			OpenQueueEntry_t msgcopy;
+        			memcpy(&msgcopy, msg, sizeof(OpenQueueEntry_t));
+        			memcpy(&msgcopy.l2_nextORpreviousHop, &biermap.bierMap[i].addr_64b, 8);
+        			return iphc_sendFromForwarding(
+        			        msg,
+        			        ipv6_outer_header,
+        			        ipv6_inner_header,
+        			        rpl_option,
+        			        &ipv6_outer_header->flow_label,
+        			        NULL,
+        			        0,
+        			        &BIER_copy[0],
+        			        BIER_length,
+        			        PCKTFORWARD
+        			);
+        		}
+        	}
+        }
 
         temp_8b = *((uint8_t*)(msg->payload)+hlen);
         type    = *((uint8_t*)(msg->payload)+hlen+1);
