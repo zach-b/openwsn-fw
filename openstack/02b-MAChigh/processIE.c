@@ -423,7 +423,9 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
                CELLTYPE_TXRX,                      // type of slot
                TRUE,                               // shared?
                linkInfo.choffset,                  // channel offset
-               &temp_neighbor                      // neighbor
+               &temp_neighbor,                     // neighbor
+			   0,								   // trackID
+			   0								   // bundleID
             );
          }
       }

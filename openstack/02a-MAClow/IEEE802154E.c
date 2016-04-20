@@ -904,13 +904,18 @@ port_INLINE void activity_ti1ORri1() {
          ieee154e_vars.dataToSend = NULL;
          // check whether we can send
          if (schedule_getOkToSend()) {
-            schedule_getNeighbor(&neighbor);
-            ieee154e_vars.dataToSend = openqueue_macGetDataPacket(&neighbor);
-            if ((ieee154e_vars.dataToSend==NULL) && (cellType==CELLTYPE_TXRX)) {
-               couldSendEB=TRUE;
-               // look for an EB packet in the queue
-               ieee154e_vars.dataToSend = openqueue_macGetEBPacket();
-            }
+        	// check if this slot is in a BIER bundle (trackID and bundleID != 0)
+        	if(schedule_getTrackID() && schedule_getBundleID() && cellType==CELLTYPE_TX){
+        		ieee154e_vars.dataToSend = openqueue_macGetDataPacketBundle(schedule_getTrackID(), schedule_getBundleID());
+        	} else { // regular slot
+        		schedule_getNeighbor(&neighbor);
+        		ieee154e_vars.dataToSend = openqueue_macGetDataPacket(&neighbor);
+        		if ((ieee154e_vars.dataToSend==NULL) && (cellType==CELLTYPE_TXRX)) {
+        			couldSendEB=TRUE;
+        			// look for an EB packet in the queue
+        			ieee154e_vars.dataToSend = openqueue_macGetEBPacket();
+        		}
+        	}
          }
          if (ieee154e_vars.dataToSend==NULL) {
             if (cellType==CELLTYPE_TX) {
@@ -1497,6 +1502,10 @@ port_INLINE void activity_ri5(PORT_RADIOTIMER_WIDTH capturedTime) {
       ieee154e_vars.dataReceived->l2_dsn            = ieee802514_header.dsn;
       ieee154e_vars.dataReceived->l2_IEListPresent  = ieee802514_header.ieListPresent;
       memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
+
+      // store schedule infos
+      ieee154e_vars.dataReceived->l2_trackID = schedule_getTrackID();
+      ieee154e_vars.dataReceived->l2_bundleID = schedule_getBundleID();
 
       // if security is enabled, decrypt/authenticate the frame.
       if (ieee154e_vars.dataReceived->l2_securityLevel != IEEE154_ASH_SLF_TYPE_NOSEC) {

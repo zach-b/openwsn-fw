@@ -316,6 +316,8 @@ typedef struct {
    bool          l2_payloadIEpresent;            // did I have payload IE field
    bool          l2_joinPriorityPresent;
    int16_t       l2_timeCorrection;              // record the timeCorrection and print out at endOfslot
+   uint8_t		 l2_bundleID					 // ID of the bundle used to receive / which should be used to send
+   uint8_t       l2_trackID						 // ID of the track used to receive / which should be used to send
    //layer-2 security
    uint8_t       l2_securityLevel;               //the security level specified for the current frame
    uint8_t       l2_keyIdMode;                   //the key Identifier mode specified for the current frame

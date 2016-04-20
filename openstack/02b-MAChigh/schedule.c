@@ -50,7 +50,9 @@ void schedule_init() {
          CELLTYPE_SERIALRX,                     // type of slot
          FALSE,                                 // shared?
          0,                                     // channel offset
-         &temp_neighbor                         // neighbor
+         &temp_neighbor,                        // neighbor
+		 0,										// trackID
+		 0										// bundleID
       );
    }
 }
@@ -83,7 +85,9 @@ void schedule_startDAGroot() {
          CELLTYPE_TXRX,                      // type of slot
          TRUE,                               // shared?
          SCHEDULE_MINIMAL_6TISCH_CHANNELOFFSET,    // channel offset
-         &temp_neighbor                      // neighbor
+         &temp_neighbor,                      // neighbor
+		 0,									  // trackID
+		 0									  // bundleID
       );
    }
 }
@@ -271,7 +275,9 @@ owerror_t schedule_addActiveSlot(
       cellType_t      type,
       bool            shared,
       channelOffset_t channelOffset,
-      open_addr_t*    neighbor
+      open_addr_t*    neighbor,
+	  uint8_t         trackID,
+	  uint8_t 		  bundleID
    ) {
    scheduleEntry_t* slotContainer;
    scheduleEntry_t* previousSlotWalker;
@@ -305,6 +311,8 @@ owerror_t schedule_addActiveSlot(
    slotContainer->type                      = type;
    slotContainer->shared                    = shared;
    slotContainer->channelOffset             = channelOffset;
+   slotContainer->trackID					= trackID;
+   slotContainer->bundleID					= bundleID;
    memcpy(&slotContainer->neighbor,neighbor,sizeof(open_addr_t));
    
    // insert in circular list
@@ -670,6 +678,44 @@ channelOffset_t schedule_getChannelOffset() {
    
    return returnVal;
 }
+
+/**
+\brief Get the track ID of the current schedule entry.
+
+\returns The track ID of the current schedule entry.
+*/
+uint8_t schedule_getTrackID() {
+   uint8_t returnVal;
+
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+
+   returnVal = schedule_vars.currentScheduleEntry->trackID;
+
+   ENABLE_INTERRUPTS();
+
+   return returnVal;
+}
+
+/**
+\brief Get the bundle ID of the current schedule entry.
+
+\returns The bundle ID of the current schedule entry.
+*/
+uint8_t schedule_getBundleID() {
+   uint8_t returnVal;
+
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+
+   returnVal = schedule_vars.currentScheduleEntry->bundleID;
+
+   ENABLE_INTERRUPTS();
+
+   return returnVal;
+}
+
+
 
 /**
 \brief Check whether I can send on this slot.

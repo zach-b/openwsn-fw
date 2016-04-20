@@ -88,6 +88,8 @@ typedef struct {
    uint8_t         numTx;
    uint8_t         numTxACK;
    asn_t           lastUsedAsn;
+   uint8_t         trackID;
+   uint8_t	       bundleID;
    void*           next;
 } scheduleEntry_t;
 
@@ -145,7 +147,9 @@ owerror_t          schedule_addActiveSlot(
    cellType_t           type,
    bool                 shared,
    uint8_t              channelOffset,
-   open_addr_t*         neighbor
+   open_addr_t*         neighbor,
+   uint8_t				trackID,
+   uint8_t				bundleID
 );
 
 void               schedule_getSlotInfo(

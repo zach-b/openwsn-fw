@@ -1389,7 +1389,9 @@ void sixtop_addCellsByState(
                   CELLTYPE_RX,
                   FALSE,
                   cellList[i].choffset,
-                  &temp_neighbor
+                  &temp_neighbor,
+				  0,
+				  0
                );
                
                break;
@@ -1401,7 +1403,9 @@ void sixtop_addCellsByState(
                   CELLTYPE_TX,
                   FALSE,
                   cellList[i].choffset,
-                  &temp_neighbor
+                  &temp_neighbor,
+				  0,
+				  0
                );
                break;
             default:
