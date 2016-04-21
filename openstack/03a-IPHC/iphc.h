@@ -144,6 +144,7 @@ enum TYPE_6LORH_enums{
     RH3_6LOTH_TYPE_4         = 0x04,
     RPI_6LOTH_TYPE           = 0x05,
     IPECAP_6LOTH_TYPE        = 0x06,
+	BIER_6LOTH_TYPE			 = 0x0f,
 };
 
 enum SIZE_6LORH_RH3_enums{
@@ -167,6 +168,8 @@ typedef struct {
    uint8_t*    hopByhop_option;
    uint8_t     hop_limit;
    uint8_t	   rhe_length;
+   uint8_t*    bierBitmap;
+   uint8_t	   bierBitmap_length;
    open_addr_t src;
    open_addr_t dest;
    uint8_t     header_length;          ///< Counter for internal use

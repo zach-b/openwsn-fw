@@ -14,6 +14,7 @@
 #include "neighbors.h"
 #include "debugpins.h"
 #include "sixtop.h"
+#include "bier.h"
 #include "adaptive_sync.h"
 #include "processIE.h"
 
@@ -906,6 +907,7 @@ port_INLINE void activity_ti1ORri1() {
          if (schedule_getOkToSend()) {
         	// check if this slot is in a BIER bundle (trackID and bundleID != 0)
         	if(schedule_getTrackID() && schedule_getBundleID() && cellType==CELLTYPE_TX){
+
         		ieee154e_vars.dataToSend = openqueue_macGetDataPacketBundle(schedule_getTrackID(), schedule_getBundleID());
         	} else { // regular slot
         		schedule_getNeighbor(&neighbor);
@@ -1113,7 +1115,6 @@ port_INLINE void activity_ti5(PORT_RADIOTIMER_WIDTH capturedTime) {
    } else {
       listenForAck = TRUE;
    }
-   
    if (listenForAck==TRUE) {
       // arm tt5
       radiotimer_schedule(DURATION_tt5);
@@ -2064,10 +2065,19 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
    // record the current ASN
    memcpy(&packetSent->l2_asn,&ieee154e_vars.asn,sizeof(asn_t));
    // associate this packet with the virtual component
-   // COMPONENT_IEEE802154E_TO_RES so RES can knows it's for it
-   packetSent->owner              = COMPONENT_IEEE802154E_TO_SIXTOP;
-   // post RES's sendDone task
-   scheduler_push_task(task_sixtopNotifSendDone,TASKPRIO_SIXTOP_NOTIF_TXDONE);
+   // check whether we are on a BIER slot
+   if(schedule_getTrackID() && schedule_getBundleID()){
+	   // COMPONENT_IEEE802154E_TO_BIER so BIER can know it's for it
+	   packetSent->owner              = COMPONENT_IEEE802154E_TO_BIER;
+	   // post RES's sendDone task
+	   // TODO : maybe change TASKPRIO
+	   scheduler_push_task(task_bierNotifSendDone,TASKPRIO_SIXTOP_NOTIF_TXDONE);
+   }else{
+	   // COMPONENT_IEEE802154E_TO_SIXTOP so SIXTOP can know it's for it
+	   packetSent->owner              = COMPONENT_IEEE802154E_TO_SIXTOP;
+	   // post RES's sendDone task
+	   scheduler_push_task(task_sixtopNotifSendDone,TASKPRIO_SIXTOP_NOTIF_TXDONE);
+   }
    // wake up the scheduler
    SCHEDULER_WAKEUP();
 }
@@ -2078,15 +2088,18 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
    // indicate reception to the schedule, to keep statistics
    schedule_indicateRx(&packetReceived->l2_asn);
    // associate this packet with the virtual component
-   // COMPONENT_IEEE802154E_TO_SIXTOP so sixtop can knows it's for it
-   packetReceived->owner          = COMPONENT_IEEE802154E_TO_SIXTOP;
-#ifdef GOLDEN_IMAGE_ROOT
-//   openserial_printInfo(COMPONENT_IEEE802154E,ERR_PACKET_SYNC,
-//                   (errorparameter_t)packetReceived->l2_asn.bytes0and1,
-//                   (errorparameter_t)packetReceived->l2_timeCorrection);
-#endif
-   // post RES's Receive task
-   scheduler_push_task(task_sixtopNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
+   // check whether we are on a BIER slot
+   if(schedule_getTrackID() && schedule_getBundleID()){
+	   // COMPONENT_IEEE802154E_TO_BIER so bier can knows it's for it
+	   packetReceived->owner          = COMPONENT_IEEE802154E_TO_BIER;
+	   // post RES's Receive task
+	   scheduler_push_task(task_bierNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
+   } else{
+	   // COMPONENT_IEEE802154E_TO_SIXTOP so sixtop can knows it's for it
+	   packetReceived->owner          = COMPONENT_IEEE802154E_TO_SIXTOP;
+	   // post RES's Receive task
+	   scheduler_push_task(task_sixtopNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
+   }
    // wake up the scheduler
    SCHEDULER_WAKEUP();
 }

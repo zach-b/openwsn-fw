@@ -8,6 +8,7 @@
 #include "neighbors.h"
 #include "openbridge.h"
 #include "icmpv6rpl.h"
+#include "bier.h"
 
 //=========================== variables =======================================
 
@@ -200,7 +201,17 @@ owerror_t iphc_sendFromForwarding(
 
 //send from bridge: 6LoWPAN header already added by OpenLBR, send as is
 owerror_t iphc_sendFromBridge(OpenQueueEntry_t *msg) {
-   msg->owner = COMPONENT_IPHC;
+	ipv6_header_iht      ipv6_outer_header;
+	ipv6_header_iht      ipv6_inner_header;
+	uint8_t              page_length;
+
+	msg->owner      = COMPONENT_IPHC;
+
+	memset(&ipv6_outer_header,0,sizeof(ipv6_header_iht));
+	memset(&ipv6_inner_header,0,sizeof(ipv6_header_iht));
+
+    iphc_retrieveIPv6Header(msg,&ipv6_outer_header,&ipv6_inner_header,&page_length);
+
    // error checking
    if (idmanager_getIsDAGroot()==FALSE) {
       openserial_printCritical(COMPONENT_IPHC,ERR_BRIDGE_MISMATCH,
@@ -208,7 +219,13 @@ owerror_t iphc_sendFromBridge(OpenQueueEntry_t *msg) {
                             (errorparameter_t)0);
       return E_FAIL;
    }
-   return sixtop_send(msg);
+
+   // TODO : check for BIER header, if any send to bier instead of sixtop.
+   if(ipv6_outer_header.bierBitmap_length){
+	   return bier_send(msg);
+   } else{
+	   return sixtop_send(msg);
+   }
 }
 
 void iphc_sendDone(OpenQueueEntry_t* msg, owerror_t error) {
@@ -547,6 +564,7 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
     ipv6_outer_header->header_length = 0;
     ipv6_inner_header->header_length = 0;
     ipv6_outer_header->rhe_length	 = 0;
+    ipv6_outer_header->bierBitmap_length = 0;
 
 
     // four steps to retrieve:
@@ -565,7 +583,7 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
     //======================= 2. and 3. IPv6 extention header and IPv6 inner header =========================
     if(page==1){
     	extention_header_length = 0;
-    	temp_8b = *((uint8_t*)(msg->payload)+*page_length+extention_header_length);
+    	temp_8b = *(uint8_t*)(msg->payload+*page_length+extention_header_length);
     	while ((temp_8b&FORMAT_6LORH_MASK) == CRITICAL_6LORH || (temp_8b&FORMAT_6LORH_MASK) == ELECTIVE_6LoRH){
     		switch (temp_8b&FORMAT_6LORH_MASK) {
     		case CRITICAL_6LORH :
@@ -649,7 +667,7 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
     		case ELECTIVE_6LoRH :
     			// this is an elective 6LoRH
     			lorh_length = temp_8b & IPINIP_LEN_6LORH_MASK;
-    			lorh_type = *(uint8_t*)(msg->payload+ipv6_outer_header->header_length+*page_length+extention_header_length);
+    			lorh_type = *(uint8_t*)(msg->payload+ipv6_outer_header->header_length+*page_length+extention_header_length+1);
     			if (lorh_type == IPINIP_TYPE_6LORH){
         			ipv6_outer_header->header_length += 1;
     				// this is IpinIP 6LoRH
@@ -688,7 +706,13 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
     						);
     					}
     				}
-    			} else {
+    			} else if (lorh_type==BIER_6LOTH_TYPE){
+    				ipv6_outer_header->bierBitmap = msg->payload+2;
+    				ipv6_outer_header->bierBitmap_length = lorh_length;
+    				extention_header_length += 2 + lorh_length;
+    				ipv6_outer_header->rhe_length += 2 + lorh_length;
+    			}
+    			else {
     				//unknown elective packet, do not do anything here
     				extention_header_length += 2 + lorh_length;
     				ipv6_outer_header->rhe_length += 2 + lorh_length;

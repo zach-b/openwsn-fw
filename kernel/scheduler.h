@@ -12,6 +12,7 @@
 
 //=========================== define ==========================================
 
+// TODO : figure out which priority we should set for BIER
 typedef enum {
    TASKPRIO_NONE                  = 0x00,
    // tasks trigger by radio

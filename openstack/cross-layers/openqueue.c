@@ -171,6 +171,21 @@ OpenQueueEntry_t* openqueue_sixtopGetSentPacket() {
    return NULL;
 }
 
+OpenQueueEntry_t* openqueue_bierGetSentPacket() {
+   uint8_t i;
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+   for (i=0;i<QUEUELENGTH;i++) {
+      if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E_TO_BIER &&
+          openqueue_vars.queue[i].creator!=COMPONENT_IEEE802154E) {
+         ENABLE_INTERRUPTS();
+         return &openqueue_vars.queue[i];
+      }
+   }
+   ENABLE_INTERRUPTS();
+   return NULL;
+}
+
 OpenQueueEntry_t* openqueue_sixtopGetReceivedPacket() {
    uint8_t i;
    INTERRUPT_DECLARATION();
@@ -186,6 +201,22 @@ OpenQueueEntry_t* openqueue_sixtopGetReceivedPacket() {
    return NULL;
 }
 
+OpenQueueEntry_t* openqueue_bierGetReceivedPacket() {
+   uint8_t i;
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+   for (i=0;i<QUEUELENGTH;i++) {
+      if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E_TO_BIER &&
+          openqueue_vars.queue[i].creator==COMPONENT_IEEE802154E) {
+         ENABLE_INTERRUPTS();
+         return &openqueue_vars.queue[i];
+      }
+   }
+   ENABLE_INTERRUPTS();
+   return NULL;
+}
+
+
 //======= called by IEEE80215E
 
 OpenQueueEntry_t* openqueue_macGetDataPacketBundle(uint8_t trackID, uint8_t bundleID) {
@@ -195,7 +226,7 @@ OpenQueueEntry_t* openqueue_macGetDataPacketBundle(uint8_t trackID, uint8_t bund
 	   if (trackID != 0 && bundleID != 0) {
 	      // look for a packet to send on this bundle
 	      for (i=0;i<QUEUELENGTH;i++) {
-	         if (openqueue_vars.queue[i].owner==COMPONENT_SIXTOP_TO_IEEE802154E &&
+	         if (openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IEEE802154E &&
 	            openqueue_vars.queue[i].l2_trackID == trackID && openqueue_vars.queue[i].l2_bundleID == bundleID) {
 	            ENABLE_INTERRUPTS();
 	            return &openqueue_vars.queue[i];

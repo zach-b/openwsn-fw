@@ -55,6 +55,48 @@ void schedule_init() {
 		 0										// bundleID
       );
    }
+
+   //Add our hardcoded slots depending on the address :
+   temp_neighbor.type = ADDR_64B;
+   memcpy(&temp_neighbor.addr_64b, idmanager_getMyID(ADDR_64B)->addr_64b, 8);
+   switch (idmanager_getMyID(ADDR_64B)->addr_64b[7]) {
+   case 1 :
+	   temp_neighbor.addr_64b[7] = 0x02;
+	   	   schedule_addActiveSlot(
+	   			   running_slotOffset,                    // slot offset
+	   			   CELLTYPE_TX,                  		    // type of slot
+	   			   FALSE,                                 // shared?
+	   			   0,                                     // channel offset
+	   			   &temp_neighbor,                        // neighbor
+	   			   1,									  // track ID
+	   			   1									  // bundle ID
+	   	);
+	   break;
+   case 2 :
+	   temp_neighbor.addr_64b[7] = 0x01;
+	   schedule_addActiveSlot(
+			   running_slotOffset,                    // slot offset
+			   CELLTYPE_RX,                  		    // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,									  // track ID
+			   1									  // bundle ID
+	   );
+	   temp_neighbor.addr_64b[7] = 0x04;
+	   schedule_addActiveSlot(
+			   running_slotOffset+1,                  // slot offset
+			   CELLTYPE_TX,                	          // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,
+			   2
+	   );
+	   break;
+   default :
+	   break;
+   }
 }
 
 /**
