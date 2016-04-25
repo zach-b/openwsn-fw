@@ -25,6 +25,7 @@ The superframe repears over time and can be arbitrarly long.
 #define SCHEDULE_MINIMAL_6TISCH_CHANNELOFFSET                     0
 #define SCHEDULE_MINIMAL_6TISCH_DEFAULT_SLOTFRAME_HANDLE          1 //id of slotframe
 #define SCHEDULE_MINIMAL_6TISCH_DEFAULT_SLOTFRAME_NUMBER          1 //1 slotframe by default.
+#define SCHEDULE_MAXHARDCODED_CELLS								  4
 
 #define NUMSERIALRX          3
 #define NUMSLOTSOFF          3
@@ -39,7 +40,7 @@ in that table; a slot is "active" when it is not of type CELLTYPE_OFF.
 Set this number to the exact number of active slots you are planning on having
 in your schedule, so not to waste RAM.
 */
-#define MAXACTIVESLOTS       (SCHEDULE_MINIMAL_6TISCH_ACTIVE_CELLS+NUMSERIALRX+NUMSLOTSOFF)
+#define MAXACTIVESLOTS       (SCHEDULE_MINIMAL_6TISCH_ACTIVE_CELLS+NUMSERIALRX+NUMSLOTSOFF+SCHEDULE_MAXHARDCODED_CELLS)
 
 /**
 \brief Minimum backoff exponent.

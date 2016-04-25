@@ -222,6 +222,8 @@ owerror_t iphc_sendFromBridge(OpenQueueEntry_t *msg) {
 
    // TODO : check for BIER header, if any send to bier instead of sixtop.
    if(ipv6_outer_header.bierBitmap_length){
+	   msg->l2_bierBitmap = ipv6_outer_header.bierBitmap;
+	   msg->l2_bierBitmapLength = ipv6_outer_header.bierBitmap_length;
 	   return bier_send(msg);
    } else{
 	   return sixtop_send(msg);
@@ -707,7 +709,7 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
     					}
     				}
     			} else if (lorh_type==BIER_6LOTH_TYPE){
-    				ipv6_outer_header->bierBitmap = msg->payload+2;
+    				ipv6_outer_header->bierBitmap = (msg->payload+ipv6_outer_header->header_length+*page_length+extention_header_length+2);
     				ipv6_outer_header->bierBitmap_length = lorh_length;
     				extention_header_length += 2 + lorh_length;
     				ipv6_outer_header->rhe_length += 2 + lorh_length;

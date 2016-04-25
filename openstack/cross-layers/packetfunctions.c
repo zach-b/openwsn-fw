@@ -269,7 +269,7 @@ void packetfunctions_reserveHeaderSize(OpenQueueEntry_t* pkt, uint8_t header_len
    pkt->payload -= header_length;
    pkt->length  += header_length;
    if ( (uint8_t*)(pkt->payload) < (uint8_t*)(pkt->packet) ) {
-      openserial_printCritical(COMPONENT_PACKETFUNCTIONS,ERR_HEADER_TOO_LONG,
+      openserial_printError(COMPONENT_PACKETFUNCTIONS,ERR_HEADER_TOO_LONG,
                             (errorparameter_t)0,
                             (errorparameter_t)pkt->length);
    }
@@ -328,6 +328,9 @@ void packetfunctions_duplicatePacket(OpenQueueEntry_t* dst, OpenQueueEntry_t* sr
 
    // update l4_payload pointer
    dst->l4_payload = dst->payload + (src->l4_payload - src->payload);
+
+   // update l2_bierBitmap pointer
+   dst->l2_bierBitmap = dst->payload + (src->l2_bierBitmap - src->payload);
 }
 
 //======= CRC calculation

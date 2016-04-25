@@ -13,6 +13,7 @@
 
 // bit - bundle mapping
 typedef struct {
+	uint8_t				length;
 	uint8_t				bitIndex[BIER_MAX_OWNED_BITS];
 	uint8_t				bundleID[BIER_MAX_OWNED_BITS];
 } biermap_entry_t;
@@ -37,6 +38,7 @@ owerror_t bier_send(OpenQueueEntry_t *msg);
 // from lower layer
 void      task_bierNotifSendDone(void);
 void      task_bierNotifReceive(void);
+void	  task_bierNotifEndOfSlotFrame(void);
 
 /**
 \}

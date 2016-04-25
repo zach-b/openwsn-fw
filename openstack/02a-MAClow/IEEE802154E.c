@@ -86,6 +86,7 @@ void     changeIsSync(bool newIsSync);
 // notifying upper layer
 void     notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error);
 void     notif_receive(OpenQueueEntry_t* packetReceived);
+void	 notif_endOfSlotFrame(void);
 // statistics
 void     resetStats(void);
 void     updateStats(PORT_SIGNED_INT_WIDTH timeCorrection);
@@ -909,6 +910,10 @@ port_INLINE void activity_ti1ORri1() {
         	if(schedule_getTrackID() && schedule_getBundleID() && cellType==CELLTYPE_TX){
 
         		ieee154e_vars.dataToSend = openqueue_macGetDataPacketBundle(schedule_getTrackID(), schedule_getBundleID());
+//        		if(!idmanager_getIsDAGroot() && ieee154e_vars.dataToSend != NULL){
+//        			openserial_printError(COMPONENT_BIER, 62, (errorparameter_t)0, (errorparameter_t)0);
+//        			endSlot();
+//        		}
         	} else { // regular slot
         		schedule_getNeighbor(&neighbor);
         		ieee154e_vars.dataToSend = openqueue_macGetDataPacket(&neighbor);
@@ -2060,7 +2065,7 @@ void changeIsSync(bool newIsSync) {
 //======= notifying upper layer
 
 void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
-   // record the outcome of the trasmission attempt
+   // record the outcome of the transmission attempt
    packetSent->l2_sendDoneError   = error;
    // record the current ASN
    memcpy(&packetSent->l2_asn,&ieee154e_vars.asn,sizeof(asn_t));
@@ -2101,6 +2106,11 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
 	   scheduler_push_task(task_sixtopNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
    }
    // wake up the scheduler
+   SCHEDULER_WAKEUP();
+}
+
+void notif_endOfSlotFrame(){
+   scheduler_push_task(task_bierNotifEndOfSlotFrame,TASKPRIO_NONE);
    SCHEDULER_WAKEUP();
 }
 
@@ -2294,6 +2304,11 @@ void endSlot() {
       ieee154e_vars.ackReceived = NULL;
    }
    
+   // if it was the last slot schedule the bier end of frame function
+   if(ieee154e_vars.nextActiveSlotOffset < ieee154e_vars.slotOffset){
+       notif_endOfSlotFrame();
+   }
+
    
    // change state
    changeState(S_SLEEP);

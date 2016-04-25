@@ -62,6 +62,7 @@ static PyObject* OpenMote_getState(OpenMote* self) {
    PyObject* tcp_vars;
    PyObject* neighbors_vars;
    PyObject* sixtop_vars;
+   PyObject* bier_vars;
    PyObject* schedule_vars;
    PyObject* schedule_dbg;
    PyObject* ieee154e_vars;
@@ -135,6 +136,11 @@ static PyObject* OpenMote_getState(OpenMote* self) {
    // TODO
    PyDict_SetItemString(returnVal, "sixtop_vars", sixtop_vars);
    
+   // sixtop_vars
+   bier_vars = PyDict_New();
+   // TODO
+   PyDict_SetItemString(returnVal, "bier_vars", bier_vars);
+ 
    // schedule_vars
    schedule_vars = PyDict_New();
    // TODO

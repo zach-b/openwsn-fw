@@ -21,6 +21,7 @@
 //-- 02b-RES
 #include "schedule.h"
 #include "sixtop.h"
+#include "bier.h"
 #include "neighbors.h"
 //-- 03a-IPHC
 #include "openbridge.h"
@@ -63,6 +64,7 @@ void openstack_init(void) {
    //-- 02b-RES
    schedule_init();
    sixtop_init();
+   bier_init();
    neighbors_init();
    //-- 03a-IPHC
    openbridge_init();

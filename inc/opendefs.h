@@ -321,6 +321,8 @@ typedef struct {
    int16_t       l2_timeCorrection;              // record the timeCorrection and print out at endOfslot
    uint8_t		 l2_bundleID;					 // ID of the bundle used to receive / which should be used to send
    uint8_t       l2_trackID;					 // ID of the track used to receive / which should be used to send
+   uint8_t*		 l2_bierBitmap;					 // pointer to the bier bitmap
+   uint8_t		 l2_bierBitmapLength;			 // length of the bier bitmap
    //layer-2 security
    uint8_t       l2_securityLevel;               //the security level specified for the current frame
    uint8_t       l2_keyIdMode;                   //the key Identifier mode specified for the current frame
