@@ -2304,8 +2304,10 @@ void endSlot() {
       ieee154e_vars.ackReceived = NULL;
    }
    
-   // if it was the last slot schedule the bier end of frame function
-   if(ieee154e_vars.nextActiveSlotOffset < ieee154e_vars.slotOffset){
+   // if we are at the end of the slot 0 (sixtop sync slot) call the bier end of frame function
+   // (we could not set it on last slot because of timing problems)
+   // TODO : confirm that slot 0 is never used by BIER
+   if(ieee154e_vars.slotOffset == 0){
        notif_endOfSlotFrame();
    }
 

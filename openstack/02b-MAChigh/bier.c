@@ -150,8 +150,11 @@ void task_bierNotifEndOfSlotFrame() {
     for(i=0; i<QUEUELENGTH; i++){
     	if(openqueue_vars.queue[i].owner == 0xf2){
     		// if it is for me
-    		openserial_printError(COMPONENT_BIER, 62, (errorparameter_t)schedule_getNextActiveSlotOffset(), (errorparameter_t)42);
    			openqueue_vars.queue[i].owner = COMPONENT_BIER;
+   			openserial_printInfo(COMPONENT_BIER,
+   					ERR_BIER_RECEIVED,
+					(errorparameter_t)*openqueue_vars.queue[i].l2_bierBitmap,
+					(errorparameter_t)*(openqueue_vars.queue[i].l2_bierBitmap+1));
    			iphc_receive(&openqueue_vars.queue[i]);
     	}
     }
