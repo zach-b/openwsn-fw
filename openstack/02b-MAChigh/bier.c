@@ -146,11 +146,11 @@ void task_bierNotifSendDone() {
 void task_bierNotifEndOfSlotFrame() {
 	uint8_t i;
 
+	// delete any pending BIER packet
+	openqueue_removeAllOwnedBy(COMPONENT_BIER_TO_IEEE802154E);
 	// send received BIER packets up the stack
     for(i=0; i<QUEUELENGTH; i++){
-    	if(openqueue_vars.queue[i].owner == 0xf2){
-    		// if it is for me
-   			openqueue_vars.queue[i].owner = COMPONENT_BIER;
+    	if(openqueue_vars.queue[i].owner == COMPONENT_BIER_TO_IPHC){
    			openserial_printInfo(COMPONENT_BIER,
    					ERR_BIER_RECEIVED,
 					(errorparameter_t)*openqueue_vars.queue[i].l2_bierBitmap,
@@ -172,7 +172,6 @@ void task_bierNotifReceive() {
     uint8_t				 i, j;
     uint8_t				 bitmask;
     biermap_entry_t	     *biermap_entry;
-
 
     elimination = FALSE;
     // get received packet from openqueue
@@ -223,9 +222,9 @@ void task_bierNotifReceive() {
     msg->l2_bierBitmapLength = ipv6_outer_header.bierBitmap_length;
 
     // check if we have already received this message (we assume only one BIER message per (track, time frame)).
-    // TODO : do it in a cleaner way...
+    // TODO : do it in a cleaner way I.E not using openqueue_vars...
     for(i=0; i<QUEUELENGTH; i++){
-    	if((openqueue_vars.queue[i].owner == COMPONENT_BIER_TO_IEEE802154E || openqueue_vars.queue[i].owner == 0xf2) &&
+    	if((openqueue_vars.queue[i].owner == COMPONENT_BIER_TO_IEEE802154E || openqueue_vars.queue[i].owner == COMPONENT_BIER_TO_IPHC) &&
     			(&openqueue_vars.queue[i]!=msg) && openqueue_vars.queue[i].l2_trackID == msg->l2_trackID){
     		// should be the same msg, make an AND on the bitmaps.
     		elimination = TRUE;
@@ -235,7 +234,7 @@ void task_bierNotifReceive() {
     			for(j=0; j<openqueue_vars.queue[i].l2_bierBitmapLength; j++){
     				*(openqueue_vars.queue[i].l2_bierBitmap+j) &= *(msg->l2_bierBitmap+j);
     			}
-    			if(openqueue_vars.queue[i].owner != 0xf2){
+    			if(openqueue_vars.queue[i].owner != COMPONENT_BIER_TO_IPHC){
     				// if in the received msg the bit for this transmission is not set for do not send (this may be the case for bidirectional bits)
     				// find the right bitmapentry :
     				for(j=0; j< BIER_MAX_TRACKS; j++){
@@ -272,10 +271,8 @@ void task_bierNotifReceive() {
 
     // send to upper layer if I am the destination
     if (idmanager_isMyAddress(&ipv6_inner_header.dest)){
-    	msg->l3_destinationAdd = ipv6_inner_header.dest;
-    	msg->owner = 0xf2;
+    	msg->owner = COMPONENT_BIER_TO_IPHC;
     	// do not send the packet up before the end of the timeframe
-    	// iphc_receive(msg);
     }else{
     	// set metadata
     	msg->owner        = COMPONENT_BIER;

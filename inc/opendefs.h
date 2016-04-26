@@ -173,6 +173,7 @@ enum {
    COMPONENT_UINJECT                   = 0x27,
    COMPONENT_RRT                       = 0x28,
    COMPONENT_SECURITY                  = 0x29,
+   COMPONENT_BIER_TO_IPHC			   = 0x2a,
 };
 
 /**
