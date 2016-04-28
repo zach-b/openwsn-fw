@@ -55,6 +55,7 @@ enum {
 #define SERFRAME_PC2MOTE_DATA               ((uint8_t)'D')
 #define SERFRAME_PC2MOTE_TRIGGERSERIALECHO  ((uint8_t)'S')
 #define SERFRAME_PC2MOTE_COMMAND_GD         ((uint8_t)'G')
+#define SERFRAME_PC2MOTE_SCHEDULECMD        ((uint8_t)'C')
 
 //=========================== typedef =========================================
 

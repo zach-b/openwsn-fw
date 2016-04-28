@@ -253,6 +253,11 @@ enum {
    ERR_SIXTOP_RETURNCODE               = 0x3d, // sixtop return code {0} at sixtop state {1}
    ERR_SIXTOP_COUNT                    = 0x3e, // there are {0} cells to request mote
    ERR_SIXTOP_LIST                     = 0x3f, // the cells reserved to request mote contains slot {0} and slot {1}
+   ERR_SCHEDULECMD_SLOPT               = 0x40, // schedule command message received
+   ERR_SCHEDULECMD_CELL                = 0x41, // schedule command message received
+   ERR_SCHEDULECMD_RECELL              = 0x42, // schedule command message received
+   ERR_SCHEDULECMD_TYSHA               = 0x43, // schedule command message received
+   ERR_SCHEDULECMD_INDEX               = 0x44, // schedule command message received
 };
 
 //=========================== typedef =========================================

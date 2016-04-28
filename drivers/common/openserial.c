@@ -18,7 +18,6 @@
 #include "uart.h"
 #include "opentimers.h"
 #include "openhdlc.h"
-#include "schedule.h"
 #include "icmpv6rpl.h"
 
 //=========================== variables =======================================
@@ -44,6 +43,7 @@ void openserial_board_reset_cb(
 );
 
 void openserial_goldenImageCommands(void);
+void openserial_scheduleCommands(void);
 
 // HDLC output
 void outputHdlcOpen(void);
@@ -431,6 +431,10 @@ void openserial_stop() {
              // golden image command
             openserial_goldenImageCommands();
             break;
+          case SERFRAME_PC2MOTE_SCHEDULECMD:
+            // scheduling command
+            openserial_scheduleCommands();
+            break;
          default:
             openserial_printError(COMPONENT_OPENSERIAL,ERR_UNSUPPORTED_COMMAND,
                                   (errorparameter_t)cmdByte,
@@ -447,6 +451,69 @@ void openserial_stop() {
    openserial_vars.inputBufFill  = 0;
    openserial_vars.busyReceiving = FALSE;
    ENABLE_INTERRUPTS();
+}
+
+void openserial_scheduleCommands(void){
+
+   uint8_t targetSlotFrame;
+   uint8_t operationId;
+   uint8_t typeId;
+   uint16_t bitIndex;
+   uint8_t shared;
+   uint8_t  input_buffer[9];
+   uint8_t  numDataBytes;
+   uint8_t  offset;
+
+   offset = 0;
+   numDataBytes = openserial_getNumDataBytes();
+   openserial_getInputBuffer(input_buffer,numDataBytes);
+
+   // 1. slotFrame 2. operationId
+   targetSlotFrame = input_buffer[offset++];
+   operationId = input_buffer[offset++];
+   openserial_printInfo(COMPONENT_OPENSERIAL,
+                         ERR_SCHEDULECMD_SLOPT,
+                         (errorparameter_t) targetSlotFrame,
+                         (errorparameter_t) operationId);
+   if (operationId <= 3) {
+       // 3. CELL
+       slotLoca_element_t cell;
+       cell.slotOffset = input_buffer[offset++];
+       cell.channelOffset = input_buffer[offset++];
+       openserial_printInfo(COMPONENT_OPENSERIAL,
+                               ERR_SCHEDULECMD_CELL,
+                               (errorparameter_t) cell.slotOffset,
+                               (errorparameter_t) cell.channelOffset);
+
+       if (operationId == 2) {
+           // 4. remapCellList
+           slotLoca_element_t remapCell;
+           remapCell.slotOffset = input_buffer[offset++];
+           remapCell.channelOffset = input_buffer[offset++];
+           openserial_printInfo(COMPONENT_OPENSERIAL,
+                                    ERR_SCHEDULECMD_RECELL,
+                                    (errorparameter_t) remapCell.slotOffset,
+                                    (errorparameter_t) remapCell.channelOffset);
+       }
+       if (operationId <= 1) {
+           // 5. cell type ID
+           typeId = input_buffer[offset++];
+           // 6. read shared boolean
+           shared = input_buffer[offset++];
+           openserial_printInfo(COMPONENT_OPENSERIAL,
+                               ERR_SCHEDULECMD_TYSHA,
+                               (errorparameter_t) typeId,
+                               (errorparameter_t) shared);
+           if (typeId){
+               // 7. read bit index if the cell type is Tx
+               bitIndex = input_buffer[offset++];
+               openserial_printInfo(COMPONENT_OPENSERIAL,
+                                  ERR_SCHEDULECMD_INDEX,
+                                  (errorparameter_t) bitIndex,
+                                  (errorparameter_t) 0);
+          }
+       }
+   }
 }
 
 void openserial_goldenImageCommands(void){
