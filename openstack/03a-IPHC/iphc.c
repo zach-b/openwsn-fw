@@ -631,31 +631,53 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
     					*page_length + \
     				    extention_header_length +\
     					ipv6_outer_header->header_length);
+    			} else if (lorh_type==5){
+   					if (ipv6_outer_header->routing_header[0] == NULL){
+   						ipv6_outer_header->next_header = IANA_IPv6HOPOPT;
+   					}
+   					ipv6_outer_header->hopByhop_option = (uint8_t*)(msg->payload) + \
+   							*page_length + \
+							extention_header_length;
+   					switch(temp_8b & (I_FLAG | K_FLAG)){
+   					case 0:
+   						extention_header_length += 2+3;
+   						break;
+   					case 1:
+   					case 2:
+   						extention_header_length += 2+2;
+   						break;
+   					case 3:
+   						extention_header_length += 2+1;
+   						break;
+   					}
+   					temp_8b = *(uint8_t*)((msg->payload) + \
+   					    *page_length + \
+   					    extention_header_length +\
+   						ipv6_outer_header->header_length);
     			} else {
-    				if (lorh_type==5){
-    					if (ipv6_outer_header->routing_header[0] == NULL){
-    						ipv6_outer_header->next_header = IANA_IPv6HOPOPT;
-    					}
-    					ipv6_outer_header->hopByhop_option = (uint8_t*)(msg->payload) + \
-    							*page_length + \
-								extention_header_length;
-    					switch(temp_8b & (I_FLAG | K_FLAG)){
-    					case 0:
-    						extention_header_length += 2+3;
-    						break;
-    					case 1:
-    					case 2:
-    						extention_header_length += 2+2;
-    						break;
-    					case 3:
-    						extention_header_length += 2+1;
-    						break;
-    					}
-    					temp_8b = *(uint8_t*)((msg->payload) + \
-    					    *page_length + \
-    					    extention_header_length +\
-    						ipv6_outer_header->header_length);
-    				} else{
+    				 size = temp_8b & RH3_6LOTH_SIZE_MASK;
+    				 size += 1;
+   					 if (lorh_type==BIER_6LOTH_TYPE_15){
+        				ipv6_outer_header->bierBitmap = (msg->payload+ipv6_outer_header->header_length+*page_length+extention_header_length+2);
+        				ipv6_outer_header->bierBitmap_length = size;
+        				extention_header_length += 2 + size;
+        				ipv6_outer_header->rhe_length += 2 + size;
+        			} else if (lorh_type==BIER_6LOTH_TYPE_16){
+        				ipv6_outer_header->bierBitmap = (msg->payload+ipv6_outer_header->header_length+*page_length+extention_header_length+2);
+        				ipv6_outer_header->bierBitmap_length = (size)*2;
+        				extention_header_length += 2 + (size)*2;
+        				ipv6_outer_header->rhe_length += 2 + (size)*2;
+        			} else if (lorh_type==BIER_6LOTH_TYPE_17){
+        				ipv6_outer_header->bierBitmap = (msg->payload+ipv6_outer_header->header_length+*page_length+extention_header_length+2);
+        				ipv6_outer_header->bierBitmap_length = (size)*4;
+        				extention_header_length += 2 + (size)*4;
+        				ipv6_outer_header->rhe_length += 2 + (size)*4;
+        			} else if (lorh_type==BIER_6LOTH_TYPE_18){
+        				ipv6_outer_header->bierBitmap = (msg->payload+ipv6_outer_header->header_length+*page_length+extention_header_length+2);
+        				ipv6_outer_header->bierBitmap_length = (size)*8;
+        				extention_header_length += 2 + (size)*8;
+        				ipv6_outer_header->rhe_length += 2 + (size)*8;
+        			} else{
     					//log wrong inf
 						openserial_printError(
 								COMPONENT_IPHC,
@@ -664,6 +686,10 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
 								(errorparameter_t)(lorh_type)
 						);
     				}
+   					temp_8b = *(uint8_t*)((msg->payload) + \
+   					   					    *page_length + \
+   					   					    extention_header_length +\
+   					   						ipv6_outer_header->header_length);
     			}
     			break;
     		case ELECTIVE_6LoRH :
@@ -708,13 +734,7 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
     						);
     					}
     				}
-    			} else if (lorh_type==BIER_6LOTH_TYPE){
-    				ipv6_outer_header->bierBitmap = (msg->payload+ipv6_outer_header->header_length+*page_length+extention_header_length+2);
-    				ipv6_outer_header->bierBitmap_length = lorh_length;
-    				extention_header_length += 2 + lorh_length;
-    				ipv6_outer_header->rhe_length += 2 + lorh_length;
-    			}
-    			else {
+    			} else {
     				//unknown elective packet, do not do anything here
     				extention_header_length += 2 + lorh_length;
     				ipv6_outer_header->rhe_length += 2 + lorh_length;

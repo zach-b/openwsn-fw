@@ -144,7 +144,10 @@ enum TYPE_6LORH_enums{
     RH3_6LOTH_TYPE_4         = 0x04,
     RPI_6LOTH_TYPE           = 0x05,
     IPECAP_6LOTH_TYPE        = 0x06,
-	BIER_6LOTH_TYPE			 = 0x0f,
+	BIER_6LOTH_TYPE_15		 = 0x0f,
+	BIER_6LOTH_TYPE_16		 = 0x10,
+	BIER_6LOTH_TYPE_17		 = 0x11,
+	BIER_6LOTH_TYPE_18		 = 0x12,
 };
 
 enum SIZE_6LORH_RH3_enums{
