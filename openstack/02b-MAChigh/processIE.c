@@ -425,7 +425,7 @@ port_INLINE void processIE_retrieveSlotframeLinkIE(
                linkInfo.choffset,                  // channel offset
                &temp_neighbor,                     // neighbor
 			   0,								   // trackID
-			   0								   // bundleID
+			   0								   // bierbitindex
             );
          }
       }

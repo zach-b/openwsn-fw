@@ -212,6 +212,7 @@ enum {
    ERR_NO_RECEIVED_PACKET              = 0x16, // there is no received packet in queue
    ERR_SCHEDULE_OVERFLOWN              = 0x17, // schedule overflown
    ERR_BIER_RECEIVED				   = 0x18, // bier message received
+   ERR_BIER_DIFFERENT_MSG			   = 0x19, // Two different messages from the same track in the queue
    // l2a
    ERR_WRONG_CELLTYPE                  = 0x19, // wrong celltype {0} at slotOffset {1}
    ERR_IEEE154_UNSUPPORTED             = 0x1a, // unsupported IEEE802.15.4 parameter {1} at location {0}

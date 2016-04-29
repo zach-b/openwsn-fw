@@ -5,28 +5,16 @@
 #include "opendefs.h"
 #include "processIE.h"
 //=========================== define ==========================================
-#define BIER_MAX_TRACKS   				1
-#define BIER_MAX_OWNED_BITS				3
+
 
 
 //=========================== typedef =========================================
 
-// bit - bundle mapping
-typedef struct {
-	uint8_t				length;
-	uint8_t				bitIndex[BIER_MAX_OWNED_BITS];
-	uint8_t				bundleID[BIER_MAX_OWNED_BITS];
-} biermap_entry_t;
 
-typedef struct {
-	uint8_t				trackID[BIER_MAX_TRACKS];
-	biermap_entry_t		biermap_entry[BIER_MAX_TRACKS];
-} biermap_t;
 
 //=========================== module variables ================================
 
 typedef struct {
-	biermap_t	biermap;
 } bier_vars_t;
 
 //=========================== prototypes ======================================
@@ -39,6 +27,9 @@ owerror_t bier_send(OpenQueueEntry_t *msg);
 void      task_bierNotifSendDone(void);
 void      task_bierNotifReceive(void);
 void	  task_bierNotifEndOfSlotFrame(void);
+bool	  bier_macIsBitSet(OpenQueueEntry_t* msg, uint8_t bitindex);
+void 	  bier_macResetBit(OpenQueueEntry_t* msg, uint8_t bitindex);
+void	  bier_macSetBit(OpenQueueEntry_t* msg, uint8_t bitindex);
 
 /**
 \}
