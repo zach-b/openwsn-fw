@@ -115,8 +115,7 @@ void task_bierNotifEndOfSlotFrame() {
 	// send received BIER packets up the stack
 	msg = openqueue_bierGetPacketToSendUp();
 	while(msg!=NULL){
-		// send bitmap infos through serial before sending up the stack
-		/*if(*msg->l2_bierBitmapLength>1){
+		if(msg->l2_bierBitmapLength>1){
 			openserial_printInfo(COMPONENT_BIER,
 					ERR_BIER_RECEIVED,
 					(errorparameter_t)*msg->l2_bierBitmap,
@@ -126,7 +125,7 @@ void task_bierNotifEndOfSlotFrame() {
 					ERR_BIER_RECEIVED,
 					(errorparameter_t)*msg->l2_bierBitmap,
 					(errorparameter_t)0);
-		}*/
+		}
 		iphc_receive(msg);
 		msg = openqueue_bierGetPacketToSendUp();
 	}
