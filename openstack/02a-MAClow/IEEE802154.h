@@ -146,6 +146,8 @@ void ieee802154_prependHeader(OpenQueueEntry_t* msg,
 void ieee802154_retrieveHeader (OpenQueueEntry_t*      msg,
                                 ieee802154_header_iht* ieee802514_header);
 
+void ieee802154_setAckRequired (OpenQueueEntry_t*	msg, bool ackRequired);
+
 /**
 \}
 \}

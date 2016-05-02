@@ -399,4 +399,21 @@ void ieee802154_retrieveHeader(OpenQueueEntry_t*      msg,
    ieee802514_header->valid=TRUE;
 }
 
+/**
+\brief Set the corresponding bit in IEEE802154 header to request for an ack or not.
+
+Note that this function can only be called when msg->payload points to the IEEE802154 header.
+
+\param[in,out] msg            The message just received.
+\param[out] ieee802514_header The internal header to write the data to.
+*/
+void ieee802154_setAckRequired (OpenQueueEntry_t*	msg, bool ackRequired){
+	if(ackRequired){
+		*((uint8_t*)(msg->payload)) |= IEEE154_ACK_YES_ACK_REQ << IEEE154_FCF_ACK_REQ;
+	} else {
+		*((uint8_t*)(msg->payload)) &= ~(IEEE154_ACK_YES_ACK_REQ << IEEE154_FCF_ACK_REQ); // TODO : do it in a cleaner way...
+	}
+}
+
+
 //=========================== private =========================================

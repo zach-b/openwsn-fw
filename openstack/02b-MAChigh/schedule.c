@@ -62,25 +62,35 @@ void schedule_init() {
    switch (idmanager_getMyID(ADDR_64B)->addr_64b[7]) {
    case 1 :
 	   temp_neighbor.addr_64b[7] = 0x02;
-	   	   schedule_addActiveSlot(
-	   			running_slotOffset,                   // slot offset
-	   			CELLTYPE_TX,                  		  // type of slot
-	   			FALSE,                                // shared?
-	   			0,                                    // channel offset
-	   			&temp_neighbor,                       // neighbor
-	   			1,									  // track ID
-				0									  // bierbitindex
-	   	);
+	   schedule_addActiveSlot(
+			   running_slotOffset,                   // slot offset
+			   CELLTYPE_TX,                  		  // type of slot
+			   FALSE,                                // shared?
+			   0,                                    // channel offset
+			   &temp_neighbor,                       // neighbor
+			   1,									  // track ID
+			   0									  // bierbitindex
+	   );
+	   temp_neighbor.addr_64b[7] = 0x02;
+	   schedule_addActiveSlot(
+			   running_slotOffset+1,                   // slot offset
+			   CELLTYPE_TX,                  		  // type of slot
+			   FALSE,                                // shared?
+			   0,                                    // channel offset
+			   &temp_neighbor,                       // neighbor
+			   1,									  // track ID
+			   0									  // bierbitindex
+	   );
 	   temp_neighbor.addr_64b[7] = 0x03;
-	   	   schedule_addActiveSlot(
-	   	   		running_slotOffset+1,                   // slot offset
-	   	   		CELLTYPE_TX,                  		  // type of slot
-	   	   		FALSE,                                // shared?
-	   	   		0,                                    // channel offset
-	   	   		&temp_neighbor,                       // neighbor
-	   	   	    1,									  // track ID
-				1									  // bierbitindex
-	   	   );
+	   schedule_addActiveSlot(
+			   running_slotOffset+2,                   // slot offset
+			   CELLTYPE_TX,                  		  // type of slot
+			   FALSE,                                // shared?
+			   0,                                    // channel offset
+			   &temp_neighbor,                       // neighbor
+			   1,									  // track ID
+			   1									  // bierbitindex
+	   );
 	   break;
    case 2 :
 	   temp_neighbor.addr_64b[7] = 0x01;
@@ -93,9 +103,18 @@ void schedule_init() {
 			   1,									  // track ID
 			   0
 	   );
+	   schedule_addActiveSlot(
+			   running_slotOffset+1,                    // slot offset
+			   CELLTYPE_RX,                  		  // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,									  // track ID
+			   0
+	   );
 	   temp_neighbor.addr_64b[7] = 0x04;
 	   schedule_addActiveSlot(
-			   running_slotOffset+4,                  // slot offset
+			   running_slotOffset+5,                  // slot offset
 			   CELLTYPE_TX,                	          // type of slot
 			   FALSE,                                 // shared?
 			   0,                                     // channel offset
@@ -104,90 +123,90 @@ void schedule_init() {
 			   3
 	   );
 	   temp_neighbor.addr_64b[7] = 0x03;
-	   	   schedule_addActiveSlot(
-	   			   running_slotOffset+2,                    // slot offset
-	   			   CELLTYPE_TX,                  		  // type of slot
-	   			   FALSE,                                 // shared?
-	   			   0,                                     // channel offset
-	   			   &temp_neighbor,                        // neighbor
-	   			   1,									  // track ID
-				   2
-	   	   );
+	   schedule_addActiveSlot(
+			   running_slotOffset+3,                    // slot offset
+			   CELLTYPE_TX,                  		  // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,									  // track ID
+			   2
+	   );
 	   temp_neighbor.addr_64b[7] = 0x03;
 	   schedule_addActiveSlot(
-	   			   running_slotOffset+3,                  // slot offset
-	   			   CELLTYPE_RX,                	          // type of slot
-	   			   FALSE,                                 // shared?
-	   			   0,                                     // channel offset
-	   			   &temp_neighbor,                        // neighbor
-	   			   1,
-				   2
+			   running_slotOffset+4,                  // slot offset
+			   CELLTYPE_RX,                	          // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,
+			   2
 	   );
 	   break;
    case 3 :
-   	   temp_neighbor.addr_64b[7] = 0x01;
-   	   schedule_addActiveSlot(
-   			   running_slotOffset+1,                    // slot offset
-   			   CELLTYPE_RX,                  		  // type of slot
-   			   FALSE,                                 // shared?
-   			   0,                                     // channel offset
-   			   &temp_neighbor,                        // neighbor
-   			   1,									  // track ID
+	   temp_neighbor.addr_64b[7] = 0x01;
+	   schedule_addActiveSlot(
+			   running_slotOffset+2,                    // slot offset
+			   CELLTYPE_RX,                  		  // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,									  // track ID
 			   1
-   	   );
-   	   temp_neighbor.addr_64b[7] = 0x04;
-   	   schedule_addActiveSlot(
-   			   running_slotOffset+5,                  // slot offset
-   			   CELLTYPE_TX,                	          // type of slot
-   			   FALSE,                                 // shared?
-   			   0,                                     // channel offset
-   			   &temp_neighbor,                        // neighbor
-   			   1,
+	   );
+	   temp_neighbor.addr_64b[7] = 0x04;
+	   schedule_addActiveSlot(
+			   running_slotOffset+6,                  // slot offset
+			   CELLTYPE_TX,                	          // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,
 			   4
-   	   );
-   	   temp_neighbor.addr_64b[7] = 0x02;
-  	   schedule_addActiveSlot(
-   		   	   running_slotOffset+2,                  // slot offset
-   		   	   CELLTYPE_RX,                  		  // type of slot
-   		   	   FALSE,                                 // shared?
-   		   	   0,                                     // channel offset
-   		   	   &temp_neighbor,                        // neighbor
-   		   	   1,									  // track ID
+	   );
+	   temp_neighbor.addr_64b[7] = 0x02;
+	   schedule_addActiveSlot(
+			   running_slotOffset+3,                  // slot offset
+			   CELLTYPE_RX,                  		  // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,									  // track ID
 			   2	   	   	   	   	   	   	   	   	   	  // bit index
-   	   );
-   	   temp_neighbor.addr_64b[7] = 0x02;
-   	   schedule_addActiveSlot(
-   		   	   running_slotOffset+3,                  // slot offset
-   		   	   CELLTYPE_TX,                	          // type of slot
-   		   	   FALSE,                                 // shared?
-   		   	   0,                                     // channel offset
-   		   	   &temp_neighbor,                        // neighbor
-   		   	   1,
+	   );
+	   temp_neighbor.addr_64b[7] = 0x02;
+	   schedule_addActiveSlot(
+			   running_slotOffset+4,                  // slot offset
+			   CELLTYPE_TX,                	          // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,
 			   2
-   	   );
-   	   break;
+	   );
+	   break;
    case 4 :
-   	   temp_neighbor.addr_64b[7] = 0x02;
-   	   schedule_addActiveSlot(
-   			   running_slotOffset+4,                  // slot offset
-   			   CELLTYPE_RX,                  		  // type of slot
-   			   FALSE,                                 // shared?
-   			   0,                                     // channel offset
-   			   &temp_neighbor,                        // neighbor
-   			   1,									  // track ID
+	   temp_neighbor.addr_64b[7] = 0x02;
+	   schedule_addActiveSlot(
+			   running_slotOffset+5,                  // slot offset
+			   CELLTYPE_RX,                  		  // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,									  // track ID
 			   3
-   	   );
-   	   temp_neighbor.addr_64b[7] = 0x03;
-   	   schedule_addActiveSlot(
-   			   running_slotOffset+5,                  // slot offset
-   			   CELLTYPE_RX,                	          // type of slot
-   			   FALSE,                                 // shared?
-   			   0,                                     // channel offset
-   			   &temp_neighbor,                        // neighbor
-   			   1,
+	   );
+	   temp_neighbor.addr_64b[7] = 0x03;
+	   schedule_addActiveSlot(
+			   running_slotOffset+6,                  // slot offset
+			   CELLTYPE_RX,                	          // type of slot
+			   FALSE,                                 // shared?
+			   0,                                     // channel offset
+			   &temp_neighbor,                        // neighbor
+			   1,
 			   4
-   	   );
-   	   break;
+	   );
+	   break;
 
    default :
 	   break;
@@ -943,16 +962,48 @@ bool schedule_getOkToSend() {
    return returnVal;
 }
 
+/**
+\brief Check whether this is the last slot of the bundle.
+
+This function is called at every BIER slot. In case I am the last slot on the bundle I will not require an ACK.
+
+\returns TRUE if it is the last slot on this bundle, FALSE otherwise.
+*/
+bool schedule_isLastSlotOfBundle() {
+   scheduleEntry_t* scheduleWalker;
+   scheduleEntry_t* nextScheduleWalker;
+
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+   
+   scheduleWalker = schedule_vars.currentScheduleEntry;
+   nextScheduleWalker = schedule_vars.currentScheduleEntry->next;
+
+   while(scheduleWalker->slotOffset < nextScheduleWalker->slotOffset){
+	   scheduleWalker = nextScheduleWalker;
+	   nextScheduleWalker = nextScheduleWalker->next;
+	   if(scheduleWalker->trackID == schedule_vars.currentScheduleEntry->trackID &&
+			   scheduleWalker->bitIndex == schedule_vars.currentScheduleEntry->bitIndex &&
+			   scheduleWalker->type == schedule_vars.currentScheduleEntry->type){
+		   ENABLE_INTERRUPTS();
+		   return FALSE;
+	   }
+   }
+
+   ENABLE_INTERRUPTS();
+
+   return TRUE;
+}
 
 
 /**
 \brief Reset the backoff and backoffExponent.
 */
 void schedule_resetBackoff() {
-   
+
    INTERRUPT_DECLARATION();
    DISABLE_INTERRUPTS();
-   
+
    // reset backoffExponent
    schedule_vars.backoffExponent = MINBE-1;
    // reset backoff

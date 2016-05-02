@@ -52,6 +52,7 @@ owerror_t bier_send(OpenQueueEntry_t *msg) {
 
 //======= from lower layer
 
+// TODO : check if we can delete this
 void task_bierNotifSendDone() {
    OpenQueueEntry_t* msg;
    
@@ -91,7 +92,6 @@ void task_bierNotifSendDone() {
    switch (msg->creator) {
       
       case COMPONENT_BIER:
-         // TODO : check if we have anything to do here
          // discard packets
          //openqueue_freePacketBuffer(msg);
 		 msg->owner = COMPONENT_BIER_TO_IEEE802154E;
@@ -132,9 +132,6 @@ void task_bierNotifEndOfSlotFrame() {
 }
 
 
-
-// TODO : we assume we have no IE in Bier messages, check that it is valid.
-// TODO : handle incoming packets.
 void task_bierNotifReceive() {
     OpenQueueEntry_t*    msg;
     OpenQueueEntry_t*    prevmsg;
@@ -168,8 +165,6 @@ void task_bierNotifReceive() {
     // take ownership
     msg->owner = COMPONENT_BIER;
     msg->creator = COMPONENT_BIER;
-
-    // TODO : change everything
 
     // update neighbor statistics
     neighbors_indicateRx(
