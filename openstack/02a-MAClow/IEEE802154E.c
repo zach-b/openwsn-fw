@@ -1134,7 +1134,7 @@ port_INLINE void activity_ti5(PORT_RADIOTIMER_WIDTH capturedTime) {
    // record the captured time
    ieee154e_vars.lastCapturedTime = capturedTime;
 
-   // decides whether to listen for an ACK. Note that for a BIER packet we need to set the ackrequest bit here
+   // decides whether to listen for an ACK
    if ((!schedule_getTrackID()) && packetfunctions_isBroadcastMulticast(&ieee154e_vars.dataToSend->l2_nextORpreviousHop)) {
       listenForAck = FALSE;
    } else if (schedule_getTrackID() && schedule_isLastSlotOfBundle()) {
