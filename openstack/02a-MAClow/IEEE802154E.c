@@ -906,14 +906,13 @@ port_INLINE void activity_ti1ORri1() {
          ieee154e_vars.dataToSend = NULL;
          // check whether we can send
          if (schedule_getOkToSend()) {
-        	// check if this slot is in a BIER bundle (trackID and bundleID != 0)
-        	if(schedule_getTrackID() && schedule_getBundleID() && cellType==CELLTYPE_TX){
-
-        		ieee154e_vars.dataToSend = openqueue_macGetDataPacketBundle(schedule_getTrackID(), schedule_getBundleID());
-//        		if(!idmanager_getIsDAGroot() && ieee154e_vars.dataToSend != NULL){
-//        			openserial_printError(COMPONENT_BIER, 62, (errorparameter_t)0, (errorparameter_t)0);
-//        			endSlot();
-//        		}
+        	// check if this slot is in a BIER bundle (trackID != 0)
+        	if(schedule_getTrackID() && cellType==CELLTYPE_TX){
+        		if(schedule_getBierDoNotSend()){
+            		// Sending already worked, go to sleep
+        			endSlot();
+        		}
+        		ieee154e_vars.dataToSend = openqueue_macGetDataPacketTrack(schedule_getTrackID());
         	} else { // regular slot
         		schedule_getNeighbor(&neighbor);
         		ieee154e_vars.dataToSend = openqueue_macGetDataPacket(&neighbor);
@@ -925,30 +924,41 @@ port_INLINE void activity_ti1ORri1() {
         	}
          }
          if (ieee154e_vars.dataToSend==NULL) {
-            if (cellType==CELLTYPE_TX) {
-               // abort
-               endSlot();
-               break;
-            } else {
-               changeToRX=TRUE;
-            }
+        	 if (cellType==CELLTYPE_TX) {
+        		 // abort
+        		 endSlot();
+        		 break;
+        	 } else {
+        		 changeToRX=TRUE;
+        	 }
          } else {
-            // change state
-            changeState(S_TXDATAOFFSET);
-            // change owner
-            ieee154e_vars.dataToSend->owner = COMPONENT_IEEE802154E;
-            if (couldSendEB==TRUE) {        // I will be sending an EB
-               //copy synch IE  -- should be Little endian???
-               // fill in the ASN field of the EB
-               ieee154e_getAsn(sync_IE.asn);
-               sync_IE.join_priority = (neighbors_getMyDAGrank()/MINHOPRANKINCREASE)-1; //poipoi -- use dagrank(rank)-1
-               memcpy(ieee154e_vars.dataToSend->l2_ASNpayload,&sync_IE,sizeof(sync_IE_ht));
-            }
-            // record that I attempt to transmit this packet
-            ieee154e_vars.dataToSend->l2_numTxAttempts++;
-            // arm tt1
-            radiotimer_schedule(DURATION_tt1);
-            break;
+        	 // in BIER mode, check if the bit is set, if so reset it, else endslot
+        	 if(schedule_getTrackID()){
+        		 if(bier_macIsBitSet(ieee154e_vars.dataToSend, schedule_getBitIndex())){
+        			 bier_macResetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+        			 openserial_printInfo(COMPONENT_IEEE802154E, ERR_BIER_FORWARDED, (errorparameter_t)*(ieee154e_vars.dataToSend->l2_bierBitmap), (errorparameter_t)*(ieee154e_vars.dataToSend->l2_bierBitmap+1));
+        		 } else{
+        			 ieee154e_vars.dataToSend=NULL;
+        			 endSlot();
+        			 break;
+        		 }
+        	 }
+        	 // change state
+        	 changeState(S_TXDATAOFFSET);
+        	 // change owner
+        	 ieee154e_vars.dataToSend->owner = COMPONENT_IEEE802154E;
+        	 if (couldSendEB==TRUE) {        // I will be sending an EB
+        		 //copy synch IE  -- should be Little endian???
+        		 // fill in the ASN field of the EB
+        		 ieee154e_getAsn(sync_IE.asn);
+        		 sync_IE.join_priority = (neighbors_getMyDAGrank()/MINHOPRANKINCREASE)-1; //poipoi -- use dagrank(rank)-1
+        		 memcpy(ieee154e_vars.dataToSend->l2_ASNpayload,&sync_IE,sizeof(sync_IE_ht));
+        	 }
+        	 // record that I attempt to transmit this packet
+        	 ieee154e_vars.dataToSend->l2_numTxAttempts++;
+        	 // arm tt1
+        	 radiotimer_schedule(DURATION_tt1);
+        	 break;
          }
       case CELLTYPE_RX:
          if (changeToRX==FALSE) {
@@ -1128,6 +1138,10 @@ port_INLINE void activity_ti5(PORT_RADIOTIMER_WIDTH capturedTime) {
       schedule_indicateTx(&ieee154e_vars.asn,TRUE);
       // indicate to upper later the packet was sent successfully
       notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
+      // if we're on a bier slot reset the bier index
+      if(schedule_getTrackID()){
+    	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+      }
       // reset local variable
       ieee154e_vars.dataToSend = NULL;
       // abort
@@ -1189,8 +1203,12 @@ port_INLINE void activity_tie5() {
       // indicate tx fail if no more retries left
       notif_sendDone(ieee154e_vars.dataToSend,E_FAIL);
    } else {
-      // return packet to the virtual COMPONENT_SIXTOP_TO_IEEE802154E component
-      ieee154e_vars.dataToSend->owner = COMPONENT_SIXTOP_TO_IEEE802154E;
+      // return packet to the virtual COMPONENT_SIXTOP_TO_IEEE802154E or COMPONENT_BIER_TO_IEEE802154E component
+	  if(schedule_getTrackID()){
+		   ieee154e_vars.dataToSend->owner = COMPONENT_BIER_TO_IEEE802154E;
+	  } else{
+		  ieee154e_vars.dataToSend->owner = COMPONENT_SIXTOP_TO_IEEE802154E;
+	  }
    }
    
    // reset local variable
@@ -1331,6 +1349,12 @@ port_INLINE void activity_ti9(PORT_RADIOTIMER_WIDTH capturedTime) {
       // inform schedule of successful transmission
       schedule_indicateTx(&ieee154e_vars.asn,TRUE);
       
+      // if we are on a BIER slot we need to set the corresponding bit back to 1
+      if (schedule_getTrackID()) {
+    	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+          // remember transmission succeeded
+          schedule_setBierDoNotSend(schedule_getTrackID(), schedule_getBitIndex(), schedule_getType());
+      }
       // inform upper layer
       notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
       ieee154e_vars.dataToSend = NULL;
@@ -1511,7 +1535,6 @@ port_INLINE void activity_ri5(PORT_RADIOTIMER_WIDTH capturedTime) {
 
       // store schedule infos
       ieee154e_vars.dataReceived->l2_trackID = schedule_getTrackID();
-      ieee154e_vars.dataReceived->l2_bundleID = schedule_getBundleID();
 
       // if security is enabled, decrypt/authenticate the frame.
       if (ieee154e_vars.dataReceived->l2_securityLevel != IEEE154_ASH_SLF_TYPE_NOSEC) {
@@ -2071,7 +2094,7 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
    memcpy(&packetSent->l2_asn,&ieee154e_vars.asn,sizeof(asn_t));
    // associate this packet with the virtual component
    // check whether we are on a BIER slot
-   if(schedule_getTrackID() && schedule_getBundleID()){
+   if(schedule_getTrackID()){
 	   // COMPONENT_IEEE802154E_TO_BIER so BIER can know it's for it
 	   packetSent->owner              = COMPONENT_IEEE802154E_TO_BIER;
 	   // post RES's sendDone task
@@ -2094,7 +2117,7 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
    schedule_indicateRx(&packetReceived->l2_asn);
    // associate this packet with the virtual component
    // check whether we are on a BIER slot
-   if(schedule_getTrackID() && schedule_getBundleID()){
+   if(schedule_getTrackID()){
 	   // COMPONENT_IEEE802154E_TO_BIER so bier can knows it's for it
 	   packetReceived->owner          = COMPONENT_IEEE802154E_TO_BIER;
 	   // post RES's Receive task
@@ -2228,7 +2251,6 @@ function should already have been done. If this is not the case, this function
 will do that for you, but assume that something went wrong.
 */
 void endSlot() {
-  
    // turn off the radio
    radio_rfOff();
    // compute the duty cycle if radio has been turned on
@@ -2259,19 +2281,28 @@ void endSlot() {
    if (ieee154e_vars.dataToSend!=NULL) {
       // if everything went well, dataToSend was set to NULL in ti9
       // getting here means transmit failed
-      
+
+	  // if we are on a BIER slot we need to set the corresponding bit back to 1
+	   if (schedule_getTrackID()) {
+		   bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+ 		   // return packet to the virtual COMPONENT_BIER_TO_IEEE802154E component
+ 		   ieee154e_vars.dataToSend->owner = COMPONENT_BIER_TO_IEEE802154E;
+	   }
+
       // indicate Tx fail to schedule to update stats
       schedule_indicateTx(&ieee154e_vars.asn,FALSE);
       
-      //decrement transmits left counter
-      ieee154e_vars.dataToSend->l2_retriesLeft--;
-      
-      if (ieee154e_vars.dataToSend->l2_retriesLeft==0) {
-         // indicate tx fail if no more retries left
-         notif_sendDone(ieee154e_vars.dataToSend,E_FAIL);
-      } else {
-         // return packet to the virtual COMPONENT_SIXTOP_TO_IEEE802154E component
-         ieee154e_vars.dataToSend->owner = COMPONENT_SIXTOP_TO_IEEE802154E;
+      //decrement transmits left counter (except if we are in a bier bundle)
+      if (!schedule_getTrackID()){
+    	  ieee154e_vars.dataToSend->l2_retriesLeft--;
+
+    	  if (ieee154e_vars.dataToSend->l2_retriesLeft==0) {
+    		  // indicate tx fail if no more retries left
+    		  notif_sendDone(ieee154e_vars.dataToSend,E_FAIL);
+    	  } else {
+    		  // return packet to the virtual COMPONENT_SIXTOP_TO_IEEE802154E component
+    		  ieee154e_vars.dataToSend->owner = COMPONENT_SIXTOP_TO_IEEE802154E;
+    	  }
       }
       
       // reset local variable

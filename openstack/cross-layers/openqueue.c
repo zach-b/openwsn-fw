@@ -154,6 +154,8 @@ void openqueue_removeAllOwnedBy(uint8_t owner) {
    ENABLE_INTERRUPTS();
 }
 
+
+
 //======= called by RES
 
 OpenQueueEntry_t* openqueue_sixtopGetSentPacket() {
@@ -216,18 +218,30 @@ OpenQueueEntry_t* openqueue_bierGetReceivedPacket() {
    return NULL;
 }
 
+OpenQueueEntry_t*  openqueue_bierGetPacketToSendUp(void){
+	uint8_t i;
+	INTERRUPT_DECLARATION();
+	DISABLE_INTERRUPTS();
+	for (i=0;i<QUEUELENGTH;i++) {
+		if (openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IPHC) {
+			ENABLE_INTERRUPTS();
+			return &openqueue_vars.queue[i];
+		}
+	}
+	ENABLE_INTERRUPTS();
+	return NULL;
+}
 
-//======= called by IEEE80215E
 
-OpenQueueEntry_t* openqueue_macGetDataPacketBundle(uint8_t trackID, uint8_t bundleID) {
+OpenQueueEntry_t* openqueue_bierGetDataPacketTrack(uint8_t trackID) {
 	uint8_t i;
 	   INTERRUPT_DECLARATION();
 	   DISABLE_INTERRUPTS();
-	   if (trackID != 0 && bundleID != 0) {
+	   if (trackID != 0) {
 	      // look for a packet to send on this bundle
 	      for (i=0;i<QUEUELENGTH;i++) {
-	         if (openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IEEE802154E &&
-	            openqueue_vars.queue[i].l2_trackID == trackID && openqueue_vars.queue[i].l2_bundleID == bundleID) {
+	         if ((openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IEEE802154E || openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IPHC)&&
+	            openqueue_vars.queue[i].l2_trackID == trackID){
 	            ENABLE_INTERRUPTS();
 	            return &openqueue_vars.queue[i];
 	         }
@@ -236,6 +250,8 @@ OpenQueueEntry_t* openqueue_macGetDataPacketBundle(uint8_t trackID, uint8_t bund
 	   ENABLE_INTERRUPTS();
 	   return NULL;
 }
+
+//======= called by IEEE80215E
 
 OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
    uint8_t i;
@@ -285,6 +301,24 @@ OpenQueueEntry_t* openqueue_macGetEBPacket() {
    }
    ENABLE_INTERRUPTS();
    return NULL;
+}
+
+OpenQueueEntry_t* openqueue_macGetDataPacketTrack(uint8_t trackID) {
+	uint8_t i;
+	   INTERRUPT_DECLARATION();
+	   DISABLE_INTERRUPTS();
+	   if (trackID != 0) {
+	      // look for a packet to send on this bundle
+	      for (i=0;i<QUEUELENGTH;i++) {
+	         if (openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IEEE802154E &&
+	            openqueue_vars.queue[i].l2_trackID == trackID) {
+	            ENABLE_INTERRUPTS();
+	            return &openqueue_vars.queue[i];
+	         }
+	      }
+	   }
+	   ENABLE_INTERRUPTS();
+	   return NULL;
 }
 
 //=========================== private =========================================

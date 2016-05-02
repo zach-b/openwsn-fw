@@ -44,8 +44,10 @@ OpenQueueEntry_t*  openqueue_sixtopGetReceivedPacket(void);
 // called by bier
 OpenQueueEntry_t*  openqueue_bierGetSentPacket(void);
 OpenQueueEntry_t*  openqueue_bierGetReceivedPacket(void);
+OpenQueueEntry_t*  openqueue_bierGetPacketToSendUp(void);
+OpenQueueEntry_t*  openqueue_bierGetDataPacketTrack(uint8_t trackID);
 // called by IEEE80215E
-OpenQueueEntry_t*  openqueue_macGetDataPacketBundle(uint8_t trackID, uint8_t bundleID);
+OpenQueueEntry_t*  openqueue_macGetDataPacketTrack(uint8_t trackID);
 OpenQueueEntry_t*  openqueue_macGetDataPacket(open_addr_t* toNeighbor);
 OpenQueueEntry_t*  openqueue_macGetEBPacket(void);
 

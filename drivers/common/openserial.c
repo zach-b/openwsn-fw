@@ -455,18 +455,27 @@ void openserial_stop() {
 
 void openserial_scheduleCommands(void){
 
-   uint8_t targetSlotFrame;
-   uint8_t operationId;
-   uint8_t typeId;
+   uint8_t  targetSlotFrame;
+   uint8_t  operationId;
+   uint8_t  typeId;
    uint16_t bitIndex;
-   uint8_t shared;
-   uint8_t  input_buffer[9];
+   uint8_t  shared;
+   uint8_t  input_buffer[10];
    uint8_t  numDataBytes;
    uint8_t  offset;
+   uint8_t  my16BID[2];
+   uint8_t  trackID;
 
    offset = 0;
+   memcpy(&my16BID[0],idmanager_vars.my16bID.addr_16b,2);
    numDataBytes = openserial_getNumDataBytes();
    openserial_getInputBuffer(input_buffer,numDataBytes);
+
+
+   openserial_printInfo(COMPONENT_OPENSERIAL,
+                        ERR_SCHEDULECMD_RECVD,
+                        (errorparameter_t) my16BID[0],
+                        (errorparameter_t) my16BID[1]);
 
    // 1. slotFrame 2. operationId
    targetSlotFrame = input_buffer[offset++];
@@ -498,20 +507,24 @@ void openserial_scheduleCommands(void){
        if (operationId <= 1) {
            // 5. cell type ID
            typeId = input_buffer[offset++];
-           // 6. read shared boolean
+           // 6. shared boolean
            shared = input_buffer[offset++];
+           // 7. bit index
+           bitIndex = ((input_buffer[offset++] << 8) & 0xff00) | (input_buffer[offset++] & 0x00ff);
+           // 8. trackID
+           trackID = input_buffer[offset++];
            openserial_printInfo(COMPONENT_OPENSERIAL,
-                               ERR_SCHEDULECMD_TYSHA,
-                               (errorparameter_t) typeId,
-                               (errorparameter_t) shared);
-           if (typeId){
-               // 7. read bit index if the cell type is Tx
-               bitIndex = input_buffer[offset++];
-               openserial_printInfo(COMPONENT_OPENSERIAL,
-                                  ERR_SCHEDULECMD_INDEX,
-                                  (errorparameter_t) bitIndex,
-                                  (errorparameter_t) 0);
-          }
+                                ERR_SCHEDULECMD_TYSHA,
+                                (errorparameter_t) typeId,
+                                (errorparameter_t) shared);
+           openserial_printInfo(COMPONENT_OPENSERIAL,
+                                ERR_SCHEDULECMD_INDEX,
+                                (errorparameter_t) (bitIndex >> 8) & 0xff,
+                                (errorparameter_t) bitIndex & 0xff);
+           openserial_printInfo(COMPONENT_OPENSERIAL,
+                                ERR_SCHEDULECMD_TRACK,
+                                (errorparameter_t) trackID,
+                                (errorparameter_t) 0);
        }
    }
 }
