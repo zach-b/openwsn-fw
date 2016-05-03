@@ -252,6 +252,8 @@ typedef struct {
    int16_t                   timeCorrection;          // store the timeCorrection, prepend and retrieve it inside of frame header
    
    uint16_t                  slotDuration;            // 
+
+   bool                      wasBitReset;			  // BIER : set to TRUE when bit is reset so I can remember to set it back in endslot()
 } ieee154e_vars_t;
 
 BEGIN_PACK

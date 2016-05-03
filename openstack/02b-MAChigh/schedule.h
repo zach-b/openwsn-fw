@@ -90,8 +90,7 @@ typedef struct {
    uint8_t         numTxACK;
    asn_t           lastUsedAsn;
    uint8_t         trackID;
-   uint8_t	       bundleID;
-   uint8_t		   bitIndex;
+   uint16_t		   bitIndex;
    bool			   bierDoNotSend;
    void*           next;
 } scheduleEntry_t;
@@ -202,6 +201,7 @@ bool 			   schedule_getBierDoNotSend(void);
 void			   schedule_setBierDoNotSend(uint8_t trackID, uint16_t bitIndex, cellType_t type);
 void			   schedule_resetBierDoNotSend(void);
 bool               schedule_getOkToSend(void);
+bool			   schedule_isLastSlotOfBundle(void);
 void               schedule_resetBackoff(void);
 void               schedule_indicateRx(asn_t*   asnTimestamp);
 void               schedule_indicateTx(

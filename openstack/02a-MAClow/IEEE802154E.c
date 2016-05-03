@@ -120,6 +120,7 @@ void ieee154e_init() {
    ieee154e_vars.isAckEnabled      = TRUE;
    ieee154e_vars.isSecurityEnabled = FALSE;
    ieee154e_vars.slotDuration      = TsSlotDuration;
+   ieee154e_vars.wasBitReset       = FALSE;
    // default hopping template
    memcpy(
        &(ieee154e_vars.chTemplate[0]),
@@ -911,6 +912,7 @@ port_INLINE void activity_ti1ORri1() {
         		if(schedule_getBierDoNotSend()){
             		// Sending already worked, go to sleep
         			endSlot();
+        			break;
         		}
         		ieee154e_vars.dataToSend = openqueue_macGetDataPacketTrack(schedule_getTrackID());
         	} else { // regular slot
@@ -936,6 +938,7 @@ port_INLINE void activity_ti1ORri1() {
         	 if(schedule_getTrackID()){
         		 if(bier_macIsBitSet(ieee154e_vars.dataToSend, schedule_getBitIndex())){
         			 bier_macResetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+        			 ieee154e_vars.wasBitReset = TRUE;
         			 openserial_printInfo(COMPONENT_IEEE802154E, ERR_BIER_FORWARDED, (errorparameter_t)*(ieee154e_vars.dataToSend->l2_bierBitmap), (errorparameter_t)*(ieee154e_vars.dataToSend->l2_bierBitmap+1));
         		 } else{
         			 ieee154e_vars.dataToSend=NULL;
@@ -1014,6 +1017,13 @@ port_INLINE void activity_ti2() {
    
    // change state
    changeState(S_TXDATAPREPARE);
+
+   // for a BIER packet set the ack requested bit accordingly
+   if (schedule_getTrackID() && schedule_isLastSlotOfBundle()) {
+	  ieee802154_setAckRequired(ieee154e_vars.dataToSend, FALSE);
+   } else if (schedule_getTrackID()){
+	  ieee802154_setAckRequired(ieee154e_vars.dataToSend, TRUE);
+   }
 
    // make a local copy of the frame
    packetfunctions_duplicatePacket(&ieee154e_vars.localCopyForTransmission, ieee154e_vars.dataToSend);
@@ -1123,13 +1133,16 @@ port_INLINE void activity_ti5(PORT_RADIOTIMER_WIDTH capturedTime) {
    
    // record the captured time
    ieee154e_vars.lastCapturedTime = capturedTime;
-   
+
    // decides whether to listen for an ACK
-   if (packetfunctions_isBroadcastMulticast(&ieee154e_vars.dataToSend->l2_nextORpreviousHop)==TRUE) {
+   if ((!schedule_getTrackID()) && packetfunctions_isBroadcastMulticast(&ieee154e_vars.dataToSend->l2_nextORpreviousHop)) {
       listenForAck = FALSE;
+   } else if (schedule_getTrackID() && schedule_isLastSlotOfBundle()) {
+	  listenForAck = FALSE;
    } else {
       listenForAck = TRUE;
    }
+
    if (listenForAck==TRUE) {
       // arm tt5
       radiotimer_schedule(DURATION_tt5);
@@ -1138,10 +1151,11 @@ port_INLINE void activity_ti5(PORT_RADIOTIMER_WIDTH capturedTime) {
       schedule_indicateTx(&ieee154e_vars.asn,TRUE);
       // indicate to upper later the packet was sent successfully
       notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
-      // if we're on a bier slot reset the bier index
-      if(schedule_getTrackID()){
-    	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
-      }
+	  // if needed set the bier index back to 1
+	  if(ieee154e_vars.wasBitReset){
+	 	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+	 	  ieee154e_vars.wasBitReset = FALSE;
+	  }
       // reset local variable
       ieee154e_vars.dataToSend = NULL;
       // abort
@@ -1209,6 +1223,11 @@ port_INLINE void activity_tie5() {
 	  } else{
 		  ieee154e_vars.dataToSend->owner = COMPONENT_SIXTOP_TO_IEEE802154E;
 	  }
+   }
+   // if needed set the bier index back to 1
+   if(ieee154e_vars.wasBitReset){
+	   bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+	   ieee154e_vars.wasBitReset = FALSE;
    }
    
    // reset local variable
@@ -1349,19 +1368,23 @@ port_INLINE void activity_ti9(PORT_RADIOTIMER_WIDTH capturedTime) {
       // inform schedule of successful transmission
       schedule_indicateTx(&ieee154e_vars.asn,TRUE);
       
-      // if we are on a BIER slot we need to set the corresponding bit back to 1
       if (schedule_getTrackID()) {
-    	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
           // remember transmission succeeded
           schedule_setBierDoNotSend(schedule_getTrackID(), schedule_getBitIndex(), schedule_getType());
       }
       // inform upper layer
       notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
+
+	  // if needed set the bier index back to 1
+	  if(ieee154e_vars.wasBitReset){
+	 	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+	 	  ieee154e_vars.wasBitReset = FALSE;
+	  }
       ieee154e_vars.dataToSend = NULL;
       
       // in any case, execute the clean-up code below (processing of ACK done)
    } while (0);
-   
+
    // free the received ack so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(ieee154e_vars.ackReceived);
    
@@ -1822,11 +1845,18 @@ port_INLINE bool isValidAck(ieee802154_header_iht* ieee802514_header, OpenQueueE
           packetfunctions_sameAddress(&ieee802514_header->src,&packetSent->l2_nextORpreviousHop);
    */
    // poipoi don't check for seq num
+   /*
    return ieee802514_header->valid==TRUE                                                           && \
           ieee802514_header->frameType==IEEE154_TYPE_ACK                                           && \
           packetfunctions_sameAddress(&ieee802514_header->panid,idmanager_getMyID(ADDR_PANID))     && \
           idmanager_isMyAddress(&ieee802514_header->dest)                                          && \
           packetfunctions_sameAddress(&ieee802514_header->src,&packetSent->l2_nextORpreviousHop);
+    */
+    // Zach don't check for sender address
+	return ieee802514_header->valid==TRUE                                                           && \
+	          ieee802514_header->frameType==IEEE154_TYPE_ACK                                           && \
+	          packetfunctions_sameAddress(&ieee802514_header->panid,idmanager_getMyID(ADDR_PANID))     && \
+	          idmanager_isMyAddress(&ieee802514_header->dest);
 }
 
 //======= ASN handling
@@ -2276,18 +2306,16 @@ void endSlot() {
    //clear vars for duty cycle on this slot   
    ieee154e_vars.radioOnTics=0;
    ieee154e_vars.radioOnThisSlot=FALSE;
-   
+
    // clean up dataToSend
    if (ieee154e_vars.dataToSend!=NULL) {
       // if everything went well, dataToSend was set to NULL in ti9
       // getting here means transmit failed
 
-	  // if we are on a BIER slot we need to set the corresponding bit back to 1
-	   if (schedule_getTrackID()) {
-		   bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
- 		   // return packet to the virtual COMPONENT_BIER_TO_IEEE802154E component
- 		   ieee154e_vars.dataToSend->owner = COMPONENT_BIER_TO_IEEE802154E;
-	   }
+	  if (schedule_getTrackID()) {
+ 		  // return packet to the virtual COMPONENT_BIER_TO_IEEE802154E component
+ 		  ieee154e_vars.dataToSend->owner = COMPONENT_BIER_TO_IEEE802154E;
+	  }
 
       // indicate Tx fail to schedule to update stats
       schedule_indicateTx(&ieee154e_vars.asn,FALSE);
@@ -2305,6 +2333,11 @@ void endSlot() {
     	  }
       }
       
+	  // if needed set the bier index back to 1
+	  if(ieee154e_vars.wasBitReset){
+	 	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+	 	  ieee154e_vars.wasBitReset = FALSE;
+	  }
       // reset local variable
       ieee154e_vars.dataToSend = NULL;
    }
