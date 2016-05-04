@@ -512,7 +512,8 @@ void openserial_scheduleCommands(void){
            // 6. shared boolean
            shared = input_buffer[offset++];
            // 7. bit index
-           bitIndex = ((input_buffer[offset++] << 8) & 0xff00) | (input_buffer[offset++] & 0x00ff);
+           bitIndex = ((input_buffer[offset++] << 8) & 0xff00);
+           bitIndex |= (input_buffer[offset++] & 0x00ff);
            // 8. trackID
            trackID = input_buffer[offset++];
 
