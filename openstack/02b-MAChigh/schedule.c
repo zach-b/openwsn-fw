@@ -626,7 +626,8 @@ scheduleEntry_t* schedule_statistic_poorLinkQuality(){
    do {
       if(
          scheduleWalker->numTx > MIN_NUMTX_FOR_PDR                     &&\
-         PDR_THRESHOLD > 100*scheduleWalker->numTxACK/scheduleWalker->numTx
+         PDR_THRESHOLD > 100*scheduleWalker->numTxACK/scheduleWalker->numTx &&\
+		 !scheduleWalker->trackID	// Do not care about BIER slots here
       ){
          break;
       }
@@ -658,7 +659,8 @@ uint16_t  schedule_getCellsCounts(uint8_t frameID,cellType_t type, open_addr_t* 
     do {
        if(
           packetfunctions_sameAddress(&(scheduleWalker->neighbor),neighbor) &&
-          type == scheduleWalker->type
+          type == scheduleWalker->type &&
+		  !scheduleWalker->trackID
        ){
            count++;
        }
@@ -668,15 +670,16 @@ uint16_t  schedule_getCellsCounts(uint8_t frameID,cellType_t type, open_addr_t* 
     ENABLE_INTERRUPTS();
     return count;
 }
-void schedule_removeAllCells(
+
+void schedule_sixtopRemoveAllCells(
     uint8_t        slotframeID,
     open_addr_t*   previousHop
     ){
     uint8_t i;
-    
-    // remove all entries in schedule with previousHop address
+
+    // remove all entries in schedule with previousHop address except BIER entries
     for(i=0;i<MAXACTIVESLOTS;i++){
-        if (packetfunctions_sameAddress(&(schedule_vars.scheduleBuf[i].neighbor),previousHop)){
+        if (!schedule_vars.scheduleBuf[i].trackID && packetfunctions_sameAddress(&(schedule_vars.scheduleBuf[i].neighbor),previousHop)){
            schedule_removeActiveSlot(
               schedule_vars.scheduleBuf[i].slotOffset,
               previousHop

@@ -52,62 +52,15 @@ owerror_t bier_send(OpenQueueEntry_t *msg) {
 
 //======= from lower layer
 
-// TODO : check if we can delete this
-void task_bierNotifSendDone() {
-   OpenQueueEntry_t* msg;
-   
-   // get recently-sent packet from openqueue
-   msg = openqueue_bierGetSentPacket();
-   if (msg==NULL) {
-      openserial_printCritical(
-         COMPONENT_BIER,
-         ERR_NO_SENT_PACKET,
-         (errorparameter_t)0,
-         (errorparameter_t)0
-      );
-      return;
-   }
-   
-   // take ownership
-   msg->owner = COMPONENT_BIER;
-   
-   // update neighbor statistics
-   if (msg->l2_sendDoneError==E_SUCCESS) {
-      neighbors_indicateTx(
-         &(msg->l2_nextORpreviousHop),
-         msg->l2_numTxAttempts,
-         TRUE,
-         &msg->l2_asn
-      );
-   } else {
-      neighbors_indicateTx(
-         &(msg->l2_nextORpreviousHop),
-         msg->l2_numTxAttempts,
-         FALSE,
-         &msg->l2_asn
-      );
-   }
-   
-   // send the packet to where it belongs
-   switch (msg->creator) {
-      
-      case COMPONENT_BIER:
-         // discard packets
-         //openqueue_freePacketBuffer(msg);
-		 msg->owner = COMPONENT_BIER_TO_IEEE802154E;
-         break;
-      
-      default:
-    	 // TODO : notify upper layer...
- 		 msg->owner = COMPONENT_BIER_TO_IEEE802154E;
-         //iphc_sendDone(msg,msg->l2_sendDoneError);
-         break;
-   }
-}
-
 void task_bierNotifEndOfSlotFrame() {
 	OpenQueueEntry_t *msg;
 
+	// notify upper layers that BIER packets transmission succeeded (always...) :
+	msg = openqueue_bierGetSentPacket();
+	while (msg!=NULL){
+		iphc_sendDone(msg, E_SUCCESS);
+		msg = openqueue_bierGetSentPacket();
+	}
 	// delete any pending BIER packet
 	openqueue_removeAllOwnedBy(COMPONENT_BIER_TO_IEEE802154E);
 	// reset all bierDoNotSend

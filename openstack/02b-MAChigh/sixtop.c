@@ -923,7 +923,7 @@ void sixtop_six2six_sendDone(OpenQueueEntry_t* msg, owerror_t error){
                   
             } else{
                 if (msg->l2_sixtop_requestCommand == IANA_6TOP_CMD_CLEAR){
-                    schedule_removeAllCells(msg->l2_sixtop_frameID,
+                    schedule_sixtopRemoveAllCells(msg->l2_sixtop_frameID,
                                           &(msg->l2_nextORpreviousHop));
                 }
             }
@@ -1177,7 +1177,7 @@ void sixtop_notifyReceiveCommand(
                 case IANA_6TOP_CMD_CLEAR:
                     container  = *((uint8_t*)(pkt->payload)+ptr);
                     frameID = container;
-                    schedule_removeAllCells(frameID,
+                    schedule_sixtopRemoveAllCells(frameID,
                                             &(pkt->l2_nextORpreviousHop));
                     code = IANA_6TOP_RC_SUCCESS;
                     break;
@@ -1289,7 +1289,8 @@ uint8_t sixtop_getCelllist(
     scheduleWalker = schedule_getCurrentScheduleEntry();
     currentEntry   = scheduleWalker;
     do {
-       if(packetfunctions_sameAddress(&(scheduleWalker->neighbor),neighbor)){
+       // add to cellList only if it is not a BIER slot
+       if(!scheduleWalker->trackID && packetfunctions_sameAddress(&(scheduleWalker->neighbor),neighbor)){
            cellList[i].tsNum        = scheduleWalker->slotOffset;
            cellList[i].choffset     = scheduleWalker->channelOffset;
            cellList[i].linkoptions  = scheduleWalker->type;

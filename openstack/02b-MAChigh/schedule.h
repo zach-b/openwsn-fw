@@ -174,7 +174,7 @@ uint16_t          schedule_getCellsCounts(
     cellType_t type,
     open_addr_t* neighbor
 );
-void              schedule_removeAllCells(
+void              schedule_sixtopRemoveAllCells(
    uint8_t        slotframeID,
    open_addr_t*   previousHop
 );

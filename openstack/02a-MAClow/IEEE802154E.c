@@ -2125,11 +2125,8 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
    // associate this packet with the virtual component
    // check whether we are on a BIER slot
    if(schedule_getTrackID()){
-	   // COMPONENT_IEEE802154E_TO_BIER so BIER can know it's for it
-	   packetSent->owner              = COMPONENT_IEEE802154E_TO_BIER;
-	   // post RES's sendDone task
-	   // TODO : maybe change TASKPRIO
-	   scheduler_push_task(task_bierNotifSendDone,TASKPRIO_SIXTOP_NOTIF_TXDONE);
+	   // Put the packet back in the sending queue, sendDone will be handled at the end of the timeFrame.
+	   packetSent->owner              = COMPONENT_BIER_TO_IEEE802154E;
    }else{
 	   // COMPONENT_IEEE802154E_TO_SIXTOP so SIXTOP can know it's for it
 	   packetSent->owner              = COMPONENT_IEEE802154E_TO_SIXTOP;
