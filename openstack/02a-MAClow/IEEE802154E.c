@@ -86,7 +86,6 @@ void     changeIsSync(bool newIsSync);
 // notifying upper layer
 void     notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error);
 void     notif_receive(OpenQueueEntry_t* packetReceived);
-void	 notif_endOfSlotFrame(void);
 // statistics
 void     resetStats(void);
 void     updateStats(PORT_SIGNED_INT_WIDTH timeCorrection);
@@ -2147,8 +2146,10 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
    if(schedule_getTrackID()){
 	   // COMPONENT_IEEE802154E_TO_BIER so bier can knows it's for it
 	   packetReceived->owner          = COMPONENT_IEEE802154E_TO_BIER;
-	   // post RES's Receive task
-	   scheduler_push_task(task_bierNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
+	   // post RES's Receive task (if we are on last slot we'll let it be called by the endslot() function)
+	   if(ieee154e_vars.slotOffset < ieee154e_vars.nextActiveSlotOffset){
+		   scheduler_push_task(task_bierNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
+	   }
    } else{
 	   // COMPONENT_IEEE802154E_TO_SIXTOP so sixtop can knows it's for it
 	   packetReceived->owner          = COMPONENT_IEEE802154E_TO_SIXTOP;
@@ -2156,11 +2157,6 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
 	   scheduler_push_task(task_sixtopNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
    }
    // wake up the scheduler
-   SCHEDULER_WAKEUP();
-}
-
-void notif_endOfSlotFrame(){
-   scheduler_push_task(task_bierNotifEndOfSlotFrame,TASKPRIO_NONE);
    SCHEDULER_WAKEUP();
 }
 
@@ -2365,11 +2361,13 @@ void endSlot() {
       ieee154e_vars.ackReceived = NULL;
    }
    
-   // if we are at the end of the slot 0 (sixtop sync slot) call the bier end of frame function
-   // (we could not set it on last slot because of timing problems)
-   // TODO : confirm that slot 0 is never used by BIER
-   if(ieee154e_vars.slotOffset == 0){
-       notif_endOfSlotFrame();
+   // Tasks to do on last slot for BIER
+   if(ieee154e_vars.slotOffset >= ieee154e_vars.nextActiveSlotOffset){
+	   // Any received message has to be handled before calling task_bierNotifEndOfSlotFrame
+	   while(openqueue_bierGetReceivedPacket()!=NULL){
+		   task_bierNotifReceive();
+	   }
+       bier_notifEndOfSlotFrame();
    }
 
    

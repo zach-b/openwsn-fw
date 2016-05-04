@@ -52,10 +52,10 @@ owerror_t bier_send(OpenQueueEntry_t *msg) {
 
 //======= from lower layer
 
-void task_bierNotifEndOfSlotFrame() {
+void bier_notifEndOfSlotFrame() {
 	OpenQueueEntry_t *msg;
 
-	// notify upper layers that BIER packets transmission succeeded (always...) :
+	// notify upper layers that BIER packets transmission succeeded (always E_SUCCESS) :
 	msg = openqueue_bierGetSentPacket();
 	while (msg!=NULL){
 		iphc_sendDone(msg, E_SUCCESS);
@@ -97,7 +97,8 @@ void task_bierNotifReceive() {
     msg = openqueue_bierGetReceivedPacket();
 
     if (msg==NULL) {
-    	openserial_printCritical(
+    	// can happen because this function is called without scheduling in endslot()
+    	openserial_printError(
     			COMPONENT_BIER,
 				ERR_NO_RECEIVED_PACKET,
 				(errorparameter_t)0,

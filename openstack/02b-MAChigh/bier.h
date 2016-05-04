@@ -25,7 +25,7 @@ void      bier_init(void);
 owerror_t bier_send(OpenQueueEntry_t *msg);
 // from lower layer
 void      task_bierNotifReceive(void);
-void	  task_bierNotifEndOfSlotFrame(void);
+void	  bier_notifEndOfSlotFrame(void);
 bool	  bier_macIsBitSet(OpenQueueEntry_t* msg, uint8_t bitindex);
 void 	  bier_macResetBit(OpenQueueEntry_t* msg, uint8_t bitindex);
 void	  bier_macSetBit(OpenQueueEntry_t* msg, uint8_t bitindex);
