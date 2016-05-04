@@ -220,7 +220,6 @@ owerror_t iphc_sendFromBridge(OpenQueueEntry_t *msg) {
       return E_FAIL;
    }
 
-   // TODO : check for BIER header, if any send to bier instead of sixtop.
    if(ipv6_outer_header.bierBitmap_length){
 	   msg->l2_bierBitmap = ipv6_outer_header.bierBitmap;
 	   msg->l2_bierBitmapLength = ipv6_outer_header.bierBitmap_length;

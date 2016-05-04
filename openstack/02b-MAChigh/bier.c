@@ -160,7 +160,6 @@ void task_bierNotifReceive() {
    	    }
     } else{
     	// I have received this message before, check that they are the same, make an AND on the bitmap and delete it
-    	// TODO : check that they are the same
     	if (msg->l2_bierBitmapLength == prevmsg->l2_bierBitmapLength){
         	// AND on the bitmap :
     		for(i=0; i<msg->l2_bierBitmapLength; i++){
@@ -204,7 +203,7 @@ owerror_t bier_send_internal(OpenQueueEntry_t* msg) {
 
 	// assign a number of retries
 	msg->l2_retriesLeft = 1;
-	// record this packet's dsn (for matching the ACK) TODO : dsn number is in the sixtop vars, check that there is no problem with that...
+	// record this packet's dsn (for matching the ACK)
 	msg->l2_dsn = sixtop_vars.dsn++;
 	// this is a new packet which I never attempted to send
 	msg->l2_numTxAttempts = 0;
