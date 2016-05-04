@@ -466,13 +466,14 @@ void openserial_scheduleCommands(void){
    uint8_t  my16BID[2];
    uint8_t  trackID;
    open_addr_t     temp_neighbor;
+   slotLoca_element_t cell;
+   slotLoca_element_t remapCell;
 
    offset = 0;
    memcpy(&my16BID[0],idmanager_vars.my16bID.addr_16b,2);
    numDataBytes = openserial_getNumDataBytes();
    openserial_getInputBuffer(input_buffer,numDataBytes);
    memset(&temp_neighbor,0,sizeof(temp_neighbor));
-
 
    openserial_printInfo(COMPONENT_OPENSERIAL,
                         ERR_SCHEDULECMD_RECVD,
@@ -486,9 +487,9 @@ void openserial_scheduleCommands(void){
                          ERR_SCHEDULECMD_SLOPT,
                          (errorparameter_t) targetSlotFrame,
                          (errorparameter_t) operationId);
+
    if (operationId <= 3) {
        // 3. CELL
-       slotLoca_element_t cell;
        cell.slotOffset = input_buffer[offset++];
        cell.channelOffset = input_buffer[offset++];
        openserial_printInfo(COMPONENT_OPENSERIAL,
@@ -498,7 +499,6 @@ void openserial_scheduleCommands(void){
 
        if (operationId == 2) {
            // 4. remapCell
-           slotLoca_element_t remapCell;
            remapCell.slotOffset = input_buffer[offset++];
            remapCell.channelOffset = input_buffer[offset++];
            openserial_printInfo(COMPONENT_OPENSERIAL,
@@ -516,18 +516,6 @@ void openserial_scheduleCommands(void){
            // 8. trackID
            trackID = input_buffer[offset++];
 
-           temp_neighbor.addr_64b[7] = 0xff;
-           schedule_addActiveSlot(
-                  cell.slotOffset,                   // slot offset
-                  typeId,                  		  // type of slot
-                  shared,                                // shared?
-                  cell.channelOffset,                    // channel offset
-                  &temp_neighbor,                       // neighbor
-                  trackID,									  // track ID
-                  bitIndex									  // bierbitindex
-           );
-
-
            openserial_printInfo(COMPONENT_OPENSERIAL,
                                 ERR_SCHEDULECMD_TYSHA,
                                 (errorparameter_t) typeId,
@@ -543,6 +531,21 @@ void openserial_scheduleCommands(void){
        }
 
    }
+
+   switch (operationId) {
+      case 0: //add slot
+           schedule_addActiveSlot(
+                   cell.slotOffset,                   // slot offset
+                   typeId,                  		  // type of slot
+                   shared,                                // shared?
+                   cell.channelOffset,                    // channel offset
+                   &temp_neighbor,                       // neighbor
+                   trackID,									  // track ID
+                   bitIndex									  // bierbitindex
+           );
+           break;
+   }
+
 }
 
 void openserial_goldenImageCommands(void){
