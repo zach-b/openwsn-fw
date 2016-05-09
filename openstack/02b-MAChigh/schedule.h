@@ -28,7 +28,7 @@ The superframe repears over time and can be arbitrarly long.
 #define SCHEDULE_MAXHARDCODED_CELLS								  4
 
 #define NUMSERIALRX          3
-#define NUMSLOTSOFF          3
+#define NUMSLOTSOFF          3 // the max number of cells that the mote can added into schedule, except 6TISCH_ACTIVE_CELLS and NUMSERIALRX. Initially those cells are off.
 
 /**
 \brief Maximum number of active slots in a superframe.
