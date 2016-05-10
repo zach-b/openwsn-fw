@@ -116,6 +116,8 @@ typedef struct {
   bool             shared;
   slotOffset_t     slotOffset;
   channelOffset_t  channelOffset;
+  uint8_t          trackID;
+  uint16_t         bitIndex;
 }slotinfo_element_t;
 
 typedef struct {

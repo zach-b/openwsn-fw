@@ -239,8 +239,10 @@ void  schedule_getSlotInfo(
        if (packetfunctions_sameAddress(neighbor,&(slotContainer->neighbor))&& (slotContainer->slotOffset==slotOffset)){
                //it exists so this is an update.
                info->link_type                 = slotContainer->type;
-               info->shared                    =slotContainer->shared;
+               info->shared                    = slotContainer->shared;
                info->channelOffset             = slotContainer->channelOffset;
+               info->trackID                   = slotContainer->trackID;
+               info->bitIndex                  = slotContainer->bitIndex;
                return; //as this is an update. No need to re-insert as it is in the same position on the list.
         }
         slotContainer++;

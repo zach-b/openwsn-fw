@@ -255,13 +255,16 @@ enum {
    ERR_SIXTOP_RETURNCODE               = 0x3f, // sixtop return code {0} at sixtop state {1}
    ERR_SIXTOP_COUNT                    = 0x40, // there are {0} cells to request mote
    ERR_SIXTOP_LIST                     = 0x41, // the cells reserved to request mote contains slot {0} and slot {1}
-   ERR_SCHEDULECMD_RECVD               = 0x42, // schedule command message received
-   ERR_SCHEDULECMD_SLOPT               = 0x43, // schedule command message received
-   ERR_SCHEDULECMD_CELL                = 0x44, // schedule command message received
-   ERR_SCHEDULECMD_RECELL              = 0x45, // schedule command message received
+   // control err
+   ERR_SCHEDULEOPT_ADD                 = 0x42, // requested cell is not available
+   ERR_SCHEDULEOPT_UNSCHE              = 0x43, // requested cell is unscheduled
+   ERR_SCHEDULEOPT_UNKNOWN             = 0x44, // schedule command is not support
+   ERR_SCHEDULEOPT_LIST                = 0x45, // schedule command message received
    ERR_SCHEDULECMD_TYSHA               = 0x46, // schedule command message received
    ERR_SCHEDULECMD_INDEX               = 0x47, // schedule command message received
    ERR_SCHEDULECMD_TRACK               = 0x48, // schedule command message received
+   // control ack
+   ACK_SCHEDULE_LIST                   = 0x50, // reply acitve cells list
 };
 
 //=========================== typedef =========================================
