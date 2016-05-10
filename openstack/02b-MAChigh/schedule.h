@@ -28,7 +28,7 @@ The superframe repears over time and can be arbitrarly long.
 #define SCHEDULE_MAXHARDCODED_CELLS								  4
 
 #define NUMSERIALRX          3
-#define NUMSLOTSOFF          3
+#define NUMSLOTSOFF          3 // the max number of cells that the mote can added into schedule, except 6TISCH_ACTIVE_CELLS and NUMSERIALRX. Initially those cells are off.
 
 /**
 \brief Maximum number of active slots in a superframe.
@@ -181,7 +181,7 @@ uint16_t          schedule_getCellsCounts(
     cellType_t type,
     open_addr_t* neighbor
 );
-void              schedule_removeAllCells(
+void              schedule_sixtopRemoveAllCells(
    uint8_t        slotframeID,
    open_addr_t*   previousHop
 );

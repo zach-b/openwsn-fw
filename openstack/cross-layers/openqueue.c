@@ -178,8 +178,9 @@ OpenQueueEntry_t* openqueue_bierGetSentPacket() {
    INTERRUPT_DECLARATION();
    DISABLE_INTERRUPTS();
    for (i=0;i<QUEUELENGTH;i++) {
-      if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E_TO_BIER &&
-          openqueue_vars.queue[i].creator!=COMPONENT_IEEE802154E) {
+      if (openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IEEE802154E &&
+          openqueue_vars.queue[i].creator!=COMPONENT_IEEE802154E &&
+		  openqueue_vars.queue[i].creator!=COMPONENT_BIER) {
          ENABLE_INTERRUPTS();
          return &openqueue_vars.queue[i];
       }

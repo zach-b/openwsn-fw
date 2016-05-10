@@ -52,62 +52,15 @@ owerror_t bier_send(OpenQueueEntry_t *msg) {
 
 //======= from lower layer
 
-// TODO : check if we can delete this
-void task_bierNotifSendDone() {
-   OpenQueueEntry_t* msg;
-   
-   // get recently-sent packet from openqueue
-   msg = openqueue_bierGetSentPacket();
-   if (msg==NULL) {
-      openserial_printCritical(
-         COMPONENT_BIER,
-         ERR_NO_SENT_PACKET,
-         (errorparameter_t)0,
-         (errorparameter_t)0
-      );
-      return;
-   }
-   
-   // take ownership
-   msg->owner = COMPONENT_BIER;
-   
-   // update neighbor statistics
-   if (msg->l2_sendDoneError==E_SUCCESS) {
-      neighbors_indicateTx(
-         &(msg->l2_nextORpreviousHop),
-         msg->l2_numTxAttempts,
-         TRUE,
-         &msg->l2_asn
-      );
-   } else {
-      neighbors_indicateTx(
-         &(msg->l2_nextORpreviousHop),
-         msg->l2_numTxAttempts,
-         FALSE,
-         &msg->l2_asn
-      );
-   }
-   
-   // send the packet to where it belongs
-   switch (msg->creator) {
-      
-      case COMPONENT_BIER:
-         // discard packets
-         //openqueue_freePacketBuffer(msg);
-		 msg->owner = COMPONENT_BIER_TO_IEEE802154E;
-         break;
-      
-      default:
-    	 // TODO : notify upper layer...
- 		 msg->owner = COMPONENT_BIER_TO_IEEE802154E;
-         //iphc_sendDone(msg,msg->l2_sendDoneError);
-         break;
-   }
-}
-
-void task_bierNotifEndOfSlotFrame() {
+void bier_notifEndOfSlotFrame() {
 	OpenQueueEntry_t *msg;
 
+	// notify upper layers that BIER packets transmission succeeded (always E_SUCCESS) :
+	msg = openqueue_bierGetSentPacket();
+	while (msg!=NULL){
+		iphc_sendDone(msg, E_SUCCESS);
+		msg = openqueue_bierGetSentPacket();
+	}
 	// delete any pending BIER packet
 	openqueue_removeAllOwnedBy(COMPONENT_BIER_TO_IEEE802154E);
 	// reset all bierDoNotSend
@@ -144,7 +97,8 @@ void task_bierNotifReceive() {
     msg = openqueue_bierGetReceivedPacket();
 
     if (msg==NULL) {
-    	openserial_printCritical(
+    	// can happen because this function is called without scheduling in endslot()
+    	openserial_printError(
     			COMPONENT_BIER,
 				ERR_NO_RECEIVED_PACKET,
 				(errorparameter_t)0,
@@ -206,7 +160,6 @@ void task_bierNotifReceive() {
    	    }
     } else{
     	// I have received this message before, check that they are the same, make an AND on the bitmap and delete it
-    	// TODO : check that they are the same
     	if (msg->l2_bierBitmapLength == prevmsg->l2_bierBitmapLength){
         	// AND on the bitmap :
     		for(i=0; i<msg->l2_bierBitmapLength; i++){
@@ -250,7 +203,7 @@ owerror_t bier_send_internal(OpenQueueEntry_t* msg) {
 
 	// assign a number of retries
 	msg->l2_retriesLeft = 1;
-	// record this packet's dsn (for matching the ACK) TODO : dsn number is in the sixtop vars, check that there is no problem with that...
+	// record this packet's dsn (for matching the ACK)
 	msg->l2_dsn = sixtop_vars.dsn++;
 	// this is a new packet which I never attempted to send
 	msg->l2_numTxAttempts = 0;

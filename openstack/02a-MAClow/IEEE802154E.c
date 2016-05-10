@@ -86,7 +86,6 @@ void     changeIsSync(bool newIsSync);
 // notifying upper layer
 void     notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error);
 void     notif_receive(OpenQueueEntry_t* packetReceived);
-void	 notif_endOfSlotFrame(void);
 // statistics
 void     resetStats(void);
 void     updateStats(PORT_SIGNED_INT_WIDTH timeCorrection);
@@ -835,6 +834,7 @@ port_INLINE void activity_ti1ORri1() {
    sync_IE_ht  sync_IE;
    bool        changeToRX=FALSE;
    bool        couldSendEB=FALSE;
+   uint16_t    numOfSleepSlots;     
 
    // increment ASN (do this first so debug pins are in sync)
    incrementAsnOffset();
@@ -885,6 +885,20 @@ port_INLINE void activity_ti1ORri1() {
       
       // find the next one
       ieee154e_vars.nextActiveSlotOffset = schedule_getNextActiveSlotOffset();
+      if (idmanager_getIsSlotSkip() && idmanager_getIsDAGroot()==FALSE) {
+          if (ieee154e_vars.nextActiveSlotOffset>ieee154e_vars.slotOffset) {
+              numOfSleepSlots = ieee154e_vars.nextActiveSlotOffset-ieee154e_vars.slotOffset;
+          } else {
+              numOfSleepSlots = schedule_getFrameLength()+ieee154e_vars.nextActiveSlotOffset-ieee154e_vars.slotOffset; 
+          }
+          
+          radio_setTimerPeriod(TsSlotDuration*(numOfSleepSlots));
+           
+          //increase ASN by numOfSleepSlots-1 slots as at this slot is already incremented by 1
+          for (i=0;i<numOfSleepSlots-1;i++){
+             incrementAsnOffset();
+          }
+      }
    } else {
       // this is NOT the next active slot, abort
       // stop using serial
@@ -992,6 +1006,22 @@ port_INLINE void activity_ti1ORri1() {
             // find the next one
             ieee154e_vars.nextActiveSlotOffset = schedule_getNextActiveSlotOffset();
          }
+         // skip following off slots
+         if (idmanager_getIsSlotSkip() && idmanager_getIsDAGroot()==FALSE) {
+             if (ieee154e_vars.nextActiveSlotOffset>ieee154e_vars.slotOffset) {
+                 numOfSleepSlots = ieee154e_vars.nextActiveSlotOffset-ieee154e_vars.slotOffset+NUMSERIALRX-1;
+             } else {
+                 numOfSleepSlots = schedule_getFrameLength()+ieee154e_vars.nextActiveSlotOffset-ieee154e_vars.slotOffset+NUMSERIALRX-1; 
+             }
+             
+             radio_setTimerPeriod(TsSlotDuration*(numOfSleepSlots));
+              
+             //only increase ASN by numOfSleepSlots-NUMSERIALRX
+             for (i=0;i<numOfSleepSlots-NUMSERIALRX;i++){
+                incrementAsnOffset();
+             }
+         }
+         
 #ifdef ADAPTIVE_SYNC
          // deal with the case when schedule multi slots
          adaptive_sync_countCompensationTimeout_compoundSlots(NUMSERIALRX-1);
@@ -2125,11 +2155,8 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
    // associate this packet with the virtual component
    // check whether we are on a BIER slot
    if(schedule_getTrackID()){
-	   // COMPONENT_IEEE802154E_TO_BIER so BIER can know it's for it
-	   packetSent->owner              = COMPONENT_IEEE802154E_TO_BIER;
-	   // post RES's sendDone task
-	   // TODO : maybe change TASKPRIO
-	   scheduler_push_task(task_bierNotifSendDone,TASKPRIO_SIXTOP_NOTIF_TXDONE);
+	   // Put the packet back in the sending queue, sendDone will be handled at the end of the timeFrame.
+	   packetSent->owner              = COMPONENT_BIER_TO_IEEE802154E;
    }else{
 	   // COMPONENT_IEEE802154E_TO_SIXTOP so SIXTOP can know it's for it
 	   packetSent->owner              = COMPONENT_IEEE802154E_TO_SIXTOP;
@@ -2150,8 +2177,10 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
    if(schedule_getTrackID()){
 	   // COMPONENT_IEEE802154E_TO_BIER so bier can knows it's for it
 	   packetReceived->owner          = COMPONENT_IEEE802154E_TO_BIER;
-	   // post RES's Receive task
-	   scheduler_push_task(task_bierNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
+	   // post RES's Receive task (if we are on last slot we'll let it be called by the endslot() function)
+	   if(ieee154e_vars.slotOffset < ieee154e_vars.nextActiveSlotOffset){
+		   scheduler_push_task(task_bierNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
+	   }
    } else{
 	   // COMPONENT_IEEE802154E_TO_SIXTOP so sixtop can knows it's for it
 	   packetReceived->owner          = COMPONENT_IEEE802154E_TO_SIXTOP;
@@ -2159,11 +2188,6 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
 	   scheduler_push_task(task_sixtopNotifReceive,TASKPRIO_SIXTOP_NOTIF_RX);
    }
    // wake up the scheduler
-   SCHEDULER_WAKEUP();
-}
-
-void notif_endOfSlotFrame(){
-   scheduler_push_task(task_bierNotifEndOfSlotFrame,TASKPRIO_NONE);
    SCHEDULER_WAKEUP();
 }
 
@@ -2368,11 +2392,13 @@ void endSlot() {
       ieee154e_vars.ackReceived = NULL;
    }
    
-   // if we are at the end of the slot 0 (sixtop sync slot) call the bier end of frame function
-   // (we could not set it on last slot because of timing problems)
-   // TODO : confirm that slot 0 is never used by BIER
-   if(ieee154e_vars.slotOffset == 0){
-       notif_endOfSlotFrame();
+   // Tasks to do on last slot for BIER
+   if(ieee154e_vars.slotOffset >= ieee154e_vars.nextActiveSlotOffset){
+	   // Any received message has to be handled before calling task_bierNotifEndOfSlotFrame
+	   while(openqueue_bierGetReceivedPacket()!=NULL){
+		   task_bierNotifReceive();
+	   }
+       bier_notifEndOfSlotFrame();
    }
 
    

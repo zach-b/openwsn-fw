@@ -220,7 +220,6 @@ owerror_t iphc_sendFromBridge(OpenQueueEntry_t *msg) {
       return E_FAIL;
    }
 
-   // TODO : check for BIER header, if any send to bier instead of sixtop.
    if(ipv6_outer_header.bierBitmap_length){
 	   msg->l2_bierBitmap = ipv6_outer_header.bierBitmap;
 	   msg->l2_bierBitmapLength = ipv6_outer_header.bierBitmap_length;
@@ -735,7 +734,13 @@ void iphc_retrieveIPv6Header(OpenQueueEntry_t* msg, ipv6_header_iht* ipv6_outer_
     					}
     				}
     			} else {
-    				//unknown elective packet, do not do anything here
+    				//unknown elective packet, print error and skip it
+    				openserial_printError(
+    						COMPONENT_IPHC,
+    				        ERR_6LOWPAN_UNSUPPORTED,
+    				        (errorparameter_t)13,
+    				        (errorparameter_t)(rh3_index)
+    				);
     				extention_header_length += 2 + lorh_length;
     				ipv6_outer_header->rhe_length += 2 + lorh_length;
     			}
