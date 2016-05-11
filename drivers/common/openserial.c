@@ -558,7 +558,7 @@ void openserial_scheduleCommands(void){
             openserial_printInfo(COMPONENT_OPENSERIAL,
                                  ERR_SCHEDULEOPT_UNSCHE,
                                  (errorparameter_t) cell.slotOffset,
-                                 (errorparameter_t) cell.channelOffset);
+                                 (errorparameter_t) 0);
          }
          break;
       case 3: //delete
@@ -569,7 +569,7 @@ void openserial_scheduleCommands(void){
             openserial_printInfo(COMPONENT_OPENSERIAL,
                                  ERR_SCHEDULEOPT_UNSCHE,
                                  (errorparameter_t) cell.slotOffset,
-                                 (errorparameter_t) cell.channelOffset);
+                                 (errorparameter_t) 0);
          }
          break;
       case 4: //list
