@@ -381,6 +381,11 @@ void sixtop_maintaining(uint16_t slotOffset,open_addr_t* neighbor){
     }
 }
 
+//======= from bier
+uint8_t sixtop_requestdsn(){
+	return sixtop_vars.dsn++;
+}
+
 //======= from upper layer
 
 owerror_t sixtop_send(OpenQueueEntry_t *msg) {
