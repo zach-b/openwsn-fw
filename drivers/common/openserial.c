@@ -498,7 +498,6 @@ void openserial_scheduleCommands(void){
            trackID = input_buffer[offset++];
        }
    }
-
    switch (operationId) {
       case 0: //add a slot
          if (schedule_isSlotOffsetAvailable(cell.slotOffset)) {
@@ -514,14 +513,14 @@ void openserial_scheduleCommands(void){
          }
          else {
             openserial_printInfo(COMPONENT_OPENSERIAL,
-                                 ERR_SCHEDULEOPT_ADD,
+                                 ERR_SCHEDULEOPT_DUP,
                                  (errorparameter_t) cell.slotOffset,
-                                 (errorparameter_t) cell.channelOffset);
+                                 (errorparameter_t) 0);
          }
          break;
       case 1: //overwrite a slot
          if (!schedule_isSlotOffsetAvailable(cell.slotOffset)) {
-            schedule_removeActiveSlot(cell.slotOffset, &temp_neighbor);
+            schedule_controllerRemoveActiveSlot(cell.slotOffset);
          }
          schedule_addActiveSlot(
                 cell.slotOffset,                   // slot offset
@@ -536,7 +535,7 @@ void openserial_scheduleCommands(void){
       case 2: //remap a slot
          if (!schedule_isSlotOffsetAvailable(cell.slotOffset)) {
             if (schedule_isSlotOffsetAvailable(remapCell.slotOffset)) {
-               schedule_getSlotInfo(cell.slotOffset, &temp_neighbor, &temp_slotinfo);
+               schedule_controllerGetSlotInfo(cell.slotOffset, &temp_slotinfo);
                schedule_addActiveSlot(
                        remapCell.slotOffset,                   // slot offset
                        temp_slotinfo.link_type,                          // type of slot
@@ -546,12 +545,13 @@ void openserial_scheduleCommands(void){
                        temp_slotinfo.trackID,                                      // track ID
                        temp_slotinfo.bitIndex
                );
+               schedule_controllerRemoveActiveSlot(cell.slotOffset);
             }
             else {
                openserial_printInfo(COMPONENT_OPENSERIAL,
-                                    ERR_SCHEDULEOPT_ADD,
+                                    ERR_SCHEDULEOPT_DUP,
                                     (errorparameter_t) remapCell.slotOffset,
-                                    (errorparameter_t) remapCell.channelOffset);
+                                    (errorparameter_t) 0);
             }
          }
          else {
@@ -563,7 +563,7 @@ void openserial_scheduleCommands(void){
          break;
       case 3: //delete
          if (!schedule_isSlotOffsetAvailable(cell.slotOffset)) {
-            schedule_removeActiveSlot(cell.slotOffset, &temp_neighbor);
+            schedule_controllerRemoveActiveSlot(cell.slotOffset);
          }
          else {
             openserial_printInfo(COMPONENT_OPENSERIAL,
@@ -581,7 +581,7 @@ void openserial_scheduleCommands(void){
                              (errorparameter_t) rxCellNum);
          break;
       case 5: //clear
-         schedule_removeAllCells(targetSlotFrame, &temp_neighbor);
+         schedule_controllerRemoveAllBierCells(targetSlotFrame);
          break;
       default:
          openserial_printInfo(COMPONENT_OPENSERIAL,

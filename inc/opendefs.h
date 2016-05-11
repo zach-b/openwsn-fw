@@ -257,7 +257,7 @@ enum {
    ERR_SIXTOP_LIST                     = 0x41, // the cells reserved to request mote contains slot {0} and slot {1}
 
    // control err
-   ERR_SCHEDULEOPT_ADD                 = 0x42, // requested cell is not available
+   ERR_SCHEDULEOPT_DUP                 = 0x42, // requested cell is not available
    ERR_SCHEDULEOPT_UNSCHE              = 0x43, // requested cell is unscheduled
    ERR_SCHEDULEOPT_UNKNOWN             = 0x44, // schedule command is not support
    ERR_SCHEDULEOPT_LIST                = 0x45, // schedule command message received
@@ -283,7 +283,7 @@ typedef struct {
 } asn_t;
 END_PACK
 
-typedef asn_t  macFrameCounter_t;
+typedef asn_t macFrameCounter_t;
 
 BEGIN_PACK
 typedef struct {                                 // always written big endian, i.e. MSB in addr[0]

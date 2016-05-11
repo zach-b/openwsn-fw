@@ -17,7 +17,7 @@
 
 The superframe repears over time and can be arbitrarly long.
 */
-#define SLOTFRAME_LENGTH    11 //should be 101
+#define SLOTFRAME_LENGTH    15 //should be 101
 
 //draft-ietf-6tisch-minimal-06
 #define SCHEDULE_MINIMAL_6TISCH_ACTIVE_CELLS                      1
@@ -160,7 +160,10 @@ owerror_t          schedule_addActiveSlot(
    uint8_t				trackID,
    uint16_t				bitIndex
 );
-
+void  schedule_controllerGetSlotInfo(
+        slotOffset_t         slotOffset,
+        slotinfo_element_t*  info
+);
 void               schedule_getSlotInfo(
    slotOffset_t         slotOffset,                      
    open_addr_t*         neighbor,
@@ -172,6 +175,9 @@ uint16_t           schedule_getMaxActiveSlots(void);
 owerror_t          schedule_removeActiveSlot(
    slotOffset_t         slotOffset,
    open_addr_t*         neighbor
+);
+owerror_t          schedule_controllerRemoveActiveSlot(
+        slotOffset_t         slotOffset
 );
 bool               schedule_isSlotOffsetAvailable(uint16_t slotOffset);
 // return the slot info which has a poor quality
@@ -185,6 +191,7 @@ void              schedule_sixtopRemoveAllCells(
    uint8_t        slotframeID,
    open_addr_t*   previousHop
 );
+void              schedule_controllerRemoveAllBierCells(uint8_t slotframeID);
 scheduleEntry_t*  schedule_getCurrentScheduleEntry();
 
 // from IEEE802154E
