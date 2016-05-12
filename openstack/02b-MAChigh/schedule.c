@@ -132,6 +132,10 @@ bool debugPrint_schedule() {
       &schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].lastUsedAsn,
       sizeof(asn_t)
    );
+   temp.trackID                       = \
+      schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].trackID;
+   temp.bitIndex                       = \
+      schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].bitIndex;
    
    // send status data over serial port
    openserial_printStatus(

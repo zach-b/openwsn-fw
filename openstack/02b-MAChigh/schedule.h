@@ -107,6 +107,8 @@ typedef struct {
    uint8_t         numTx;
    uint8_t         numTxACK;
    asn_t           lastUsedAsn;
+   uint8_t         trackID;
+   uint16_t        bitIndex;
 } debugScheduleEntry_t;
 END_PACK
 
