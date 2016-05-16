@@ -122,11 +122,6 @@ typedef struct {
   uint16_t         bitIndex;
 }slotinfo_element_t;
 
-typedef struct {
-    slotOffset_t   slotOffset;
-    channelOffset_t channelOffset;
-}slotLoca_element_t;
-
 //=========================== variables =======================================
 
 typedef struct {

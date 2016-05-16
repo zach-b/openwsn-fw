@@ -183,7 +183,6 @@ void schedule_setFrameLength(frameLength_t newFrameLength) {
    
    INTERRUPT_DECLARATION();
    DISABLE_INTERRUPTS();
-   
    schedule_vars.frameLength = newFrameLength;
    if (newFrameLength <= MAXACTIVESLOTS) {
       schedule_vars.maxActiveSlots = newFrameLength;
@@ -319,6 +318,7 @@ owerror_t schedule_addActiveSlot(
 	  uint8_t         trackID,
 	  uint16_t		  bitIndex
    ) {
+
    scheduleEntry_t* slotContainer;
    scheduleEntry_t* previousSlotWalker;
    scheduleEntry_t* nextSlotWalker;
@@ -650,9 +650,8 @@ void schedule_sixtopRemoveAllCells(
 }
 
 //remove all bier cell
-void schedule_controllerRemoveAllBierCells(uint8_t slotframeID){
+void schedule_controllerRemoveAllBierCells(uint8_t slotFrameID){
    uint8_t i;
-
    // remove all BIER entries
    for(i=0;i<MAXACTIVESLOTS;i++){
       if (schedule_vars.scheduleBuf[i].trackID ){
