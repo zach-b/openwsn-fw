@@ -17,7 +17,7 @@
 
 The superframe repears over time and can be arbitrarly long.
 */
-#define SLOTFRAME_LENGTH    15 //should be 101
+#define SLOTFRAME_LENGTH    11 //should be 101
 
 //draft-ietf-6tisch-minimal-06
 #define SCHEDULE_MINIMAL_6TISCH_ACTIVE_CELLS                      1
@@ -125,7 +125,6 @@ typedef struct {
 //=========================== variables =======================================
 
 typedef struct {
-   scheduleEntry_t  scheduleBuf[MAXACTIVESLOTS];
    scheduleEntry_t* currentScheduleEntry;
    frameLength_t    frameLength;
    frameLength_t    maxActiveSlots;
@@ -134,7 +133,10 @@ typedef struct {
    uint8_t          backoffExponent;
    uint8_t          backoff;
    uint8_t          debugPrintRow;
+   scheduleEntry_t  scheduleBuf[];
 } schedule_vars_t;
+
+
 
 //=========================== prototypes ======================================
 

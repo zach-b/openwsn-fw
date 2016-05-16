@@ -257,9 +257,9 @@ enum {
    ERR_SIXTOP_LIST                     = 0x41, // the cells reserved to request mote contains slot {0} and slot {1}
 
    // control err
-   ERR_SCHEDULEOPT_DUP                 = 0x42, // requested cell is not available
-   ERR_SCHEDULEOPT_UNSCHE              = 0x43, // requested cell is unscheduled
-   ERR_SCHEDULEOPT_UNKNOWN             = 0x44, // schedule command is not support
+   ERR_SCHEDULE_ADDDUPLICATESLOT       = 0x42, // the slot {0} to be added is already in schedule
+   ERR_SCHEDULE_OPTUNSCHE              = 0x43, // requested cell is unscheduled
+   ERR_SCHEDULE_OPTUNKNOWN             = 0x44, // schedule command is not support
    ERR_SCHEDULEOPT_LIST                = 0x45, // schedule command message received
    ERR_SCHEDULECMD_TYSHA               = 0x46, // schedule command message received
    ERR_SCHEDULECMD_INDEX               = 0x47, // schedule command message received

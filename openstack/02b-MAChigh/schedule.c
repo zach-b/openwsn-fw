@@ -7,7 +7,6 @@
 #include "idmanager.h"
 
 //=========================== variables =======================================
-
 schedule_vars_t schedule_vars;
 
 //=========================== prototypes ======================================
@@ -29,7 +28,9 @@ void schedule_init() {
    open_addr_t     temp_neighbor;
 
    // reset local variables
-   memset(&schedule_vars,0,sizeof(schedule_vars_t));
+
+
+   memset(&schedule_vars,0,sizeof (schedule_vars_t));
    for (running_slotOffset=0;running_slotOffset<MAXACTIVESLOTS;running_slotOffset++) {
       schedule_resetEntry(&schedule_vars.scheduleBuf[running_slotOffset]);
    }
@@ -184,7 +185,7 @@ void schedule_setFrameLength(frameLength_t newFrameLength) {
    INTERRUPT_DECLARATION();
    DISABLE_INTERRUPTS();
    schedule_vars.frameLength = newFrameLength;
-   if (newFrameLength <= MAXACTIVESLOTS) {
+   if (newFrameLength <= schedule_vars.maxActiveSlots) {
       schedule_vars.maxActiveSlots = newFrameLength;
    }
    ENABLE_INTERRUPTS();
@@ -393,7 +394,8 @@ owerror_t schedule_addActiveSlot(
          if (previousSlotWalker->slotOffset == slotContainer->slotOffset) {
             // slot is already in schedule
             openserial_printError(
-               COMPONENT_SCHEDULE,ERR_SCHEDULEOPT_DUP,
+               COMPONENT_SCHEDULE,
+               ERR_SCHEDULE_ADDDUPLICATESLOT,
                (errorparameter_t)slotContainer->slotOffset,
                (errorparameter_t)0
             );
@@ -639,7 +641,7 @@ void schedule_sixtopRemoveAllCells(
     uint8_t i;
 
     // remove all entries in schedule with previousHop address except BIER entries
-    for(i=0;i<MAXACTIVESLOTS;i++){
+    for(i=0;i<schedule_vars.maxActiveSlots;i++){
         if (!schedule_vars.scheduleBuf[i].trackID && packetfunctions_sameAddress(&(schedule_vars.scheduleBuf[i].neighbor),previousHop)){
            schedule_removeActiveSlot(
               schedule_vars.scheduleBuf[i].slotOffset,
@@ -653,7 +655,7 @@ void schedule_sixtopRemoveAllCells(
 void schedule_controllerRemoveAllBierCells(uint8_t slotFrameID){
    uint8_t i;
    // remove all BIER entries
-   for(i=0;i<MAXACTIVESLOTS;i++){
+   for(i=0;i<schedule_vars.maxActiveSlots;i++){
       if (schedule_vars.scheduleBuf[i].trackID ){
          schedule_controllerRemoveActiveSlot(schedule_vars.scheduleBuf[i].slotOffset);
       }
@@ -869,7 +871,7 @@ void schedule_setBierDoNotSend(uint8_t trackID, uint16_t bitIndex, cellType_t ce
 	INTERRUPT_DECLARATION();
 	DISABLE_INTERRUPTS();
 
-	for (running_slotOffset=0;running_slotOffset<MAXACTIVESLOTS;running_slotOffset++) {
+	for (running_slotOffset=0;running_slotOffset<schedule_vars.maxActiveSlots;running_slotOffset++) {
 		if(schedule_vars.scheduleBuf[running_slotOffset].trackID==trackID &&
 				schedule_vars.scheduleBuf[running_slotOffset].bitIndex==bitIndex &&
 				schedule_vars.scheduleBuf[running_slotOffset].type==celltype){
@@ -886,7 +888,7 @@ void schedule_resetBierDoNotSend(){
 	INTERRUPT_DECLARATION();
 	DISABLE_INTERRUPTS();
 
-	for (running_slotOffset=0;running_slotOffset<MAXACTIVESLOTS;running_slotOffset++) {
+	for (running_slotOffset=0;running_slotOffset<schedule_vars.maxActiveSlots;running_slotOffset++) {
 		schedule_vars.scheduleBuf[running_slotOffset].bierDoNotSend = 0;
 
 	}

@@ -465,6 +465,7 @@ void openserial_scheduleCommands(void){
    uint8_t             trackID;
    uint8_t             rxCellNum;
    uint8_t             txCEllNum;
+   uint8_t             newMaxActiveSlots;
    open_addr_t         temp_neighbor;
    slotinfo_element_t  temp_slotinfo;
    slotOffset_t        slotOffset;
@@ -484,6 +485,7 @@ void openserial_scheduleCommands(void){
 
    if (operationId ==6) {
        newFrameLength = input_buffer[offset++];
+       newMaxActiveSlots = input_buffer[offset++];
    }
    else if (operationId <= 3) {
        //  CELL
@@ -521,7 +523,7 @@ void openserial_scheduleCommands(void){
          }
          else {
             openserial_printInfo(COMPONENT_OPENSERIAL,
-                                 ERR_SCHEDULEOPT_DUP,
+                                 ERR_SCHEDULE_ADDDUPLICATESLOT,
                                  (errorparameter_t) slotOffset,
                                  (errorparameter_t) 0);
          }
@@ -557,14 +559,14 @@ void openserial_scheduleCommands(void){
             }
             else {
                openserial_printInfo(COMPONENT_OPENSERIAL,
-                                    ERR_SCHEDULEOPT_DUP,
+                                    ERR_SCHEDULE_ADDDUPLICATESLOT,
                                     (errorparameter_t) remapslotOffset,
                                     (errorparameter_t) 0);
             }
          }
          else {
             openserial_printInfo(COMPONENT_OPENSERIAL,
-                                 ERR_SCHEDULEOPT_UNSCHE,
+                                 ERR_SCHEDULE_OPTUNSCHE,
                                  (errorparameter_t) slotOffset,
                                  (errorparameter_t) 0);
          }
@@ -575,7 +577,7 @@ void openserial_scheduleCommands(void){
          }
          else {
             openserial_printInfo(COMPONENT_OPENSERIAL,
-                                 ERR_SCHEDULEOPT_UNSCHE,
+                                 ERR_SCHEDULE_OPTUNSCHE,
                                  (errorparameter_t) slotOffset,
                                  (errorparameter_t) 0);
          }
@@ -592,13 +594,14 @@ void openserial_scheduleCommands(void){
          schedule_controllerRemoveAllBierCells(targetSlotFrame);
          break;
       case 6:
-         if (schedule_vars.frameLength != newFrameLength) {
+         if (newFrameLength && (schedule_vars.frameLength != newFrameLength)) {
             schedule_setFrameLength(newFrameLength);
          }
+         schedule_vars.maxActiveSlots  = newMaxActiveSlots;
          break;
       default:
          openserial_printInfo(COMPONENT_OPENSERIAL,
-                              ERR_SCHEDULEOPT_UNKNOWN,
+                              ERR_SCHEDULE_OPTUNKNOWN,
                               (errorparameter_t) operationId,
                               (errorparameter_t) 0);
          break;
