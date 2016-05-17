@@ -7,7 +7,6 @@
 #include "idmanager.h"
 
 //=========================== variables =======================================
-
 schedule_vars_t schedule_vars;
 
 //=========================== prototypes ======================================
@@ -29,7 +28,9 @@ void schedule_init() {
    open_addr_t     temp_neighbor;
 
    // reset local variables
-   memset(&schedule_vars,0,sizeof(schedule_vars_t));
+
+
+   memset(&schedule_vars,0,sizeof (schedule_vars_t));
    for (running_slotOffset=0;running_slotOffset<MAXACTIVESLOTS;running_slotOffset++) {
       schedule_resetEntry(&schedule_vars.scheduleBuf[running_slotOffset]);
    }
@@ -132,6 +133,10 @@ bool debugPrint_schedule() {
       &schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].lastUsedAsn,
       sizeof(asn_t)
    );
+   temp.trackID                       = \
+      schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].trackID;
+   temp.bitIndex                       = \
+      schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].bitIndex;
    
    // send status data over serial port
    openserial_printStatus(
@@ -179,9 +184,8 @@ void schedule_setFrameLength(frameLength_t newFrameLength) {
    
    INTERRUPT_DECLARATION();
    DISABLE_INTERRUPTS();
-   
    schedule_vars.frameLength = newFrameLength;
-   if (newFrameLength <= MAXACTIVESLOTS) {
+   if (newFrameLength <= schedule_vars.maxActiveSlots) {
       schedule_vars.maxActiveSlots = newFrameLength;
    }
    ENABLE_INTERRUPTS();
@@ -239,7 +243,7 @@ void  schedule_getSlotInfo(
        if (packetfunctions_sameAddress(neighbor,&(slotContainer->neighbor))&& (slotContainer->slotOffset==slotOffset)){
                //it exists so this is an update.
                info->link_type                 = slotContainer->type;
-               info->shared                    =slotContainer->shared;
+               info->shared                    = slotContainer->shared;
                info->channelOffset             = slotContainer->channelOffset;
                return; //as this is an update. No need to re-insert as it is in the same position on the list.
         }
@@ -261,6 +265,42 @@ uint16_t  schedule_getMaxActiveSlots() {
 }
 
 /**
+\brief Get the information of a specific BIER slot.
+
+\param slotOffset
+\param info
+*/
+void  schedule_controllerGetSlotInfo(
+        slotOffset_t         slotOffset,
+        slotinfo_element_t*  info
+){
+
+   scheduleEntry_t* slotContainer;
+
+   // find an empty schedule entry container
+   slotContainer = &schedule_vars.scheduleBuf[0];
+   while (slotContainer<=&schedule_vars.scheduleBuf[schedule_vars.maxActiveSlots-1]) {
+      //check that this entry for that neighbour and timeslot is not already scheduled.
+      if ((slotContainer -> trackID) && (slotContainer->slotOffset==slotOffset)){
+         //it exists so this is an update.
+         info->link_type                 = slotContainer->type;
+         info->shared                    = slotContainer->shared;
+         info->channelOffset             = slotContainer->channelOffset;
+         info->trackID                   = slotContainer->trackID;
+         info->bitIndex                  = slotContainer->bitIndex;
+         return; //as this is an update. No need to re-insert as it is in the same position on the list.
+      }
+      slotContainer++;
+   }
+   //return cell type off.
+   info->link_type                 = CELLTYPE_OFF;
+   info->shared                    = FALSE;
+   info->channelOffset             = 0;//set to zero if not set.
+   info->trackID                   = 0;
+   info->bitIndex                  = 0;
+}
+
+/**
 \brief Add a new active slot into the schedule.
 
 \param slotOffset       The slotoffset of the new slot
@@ -279,6 +319,7 @@ owerror_t schedule_addActiveSlot(
 	  uint8_t         trackID,
 	  uint16_t		  bitIndex
    ) {
+
    scheduleEntry_t* slotContainer;
    scheduleEntry_t* previousSlotWalker;
    scheduleEntry_t* nextSlotWalker;
@@ -349,6 +390,17 @@ owerror_t schedule_addActiveSlot(
                )
          ) {
             break;
+         }
+         if (previousSlotWalker->slotOffset == slotContainer->slotOffset) {
+            // slot is already in schedule
+            openserial_printError(
+               COMPONENT_SCHEDULE,
+               ERR_SCHEDULE_ADDDUPLICATESLOT,
+               (errorparameter_t)slotContainer->slotOffset,
+               (errorparameter_t)0
+            );
+            ENABLE_INTERRUPTS();
+            return E_FAIL;
          }
          previousSlotWalker                 = nextSlotWalker;
       }
@@ -439,6 +491,73 @@ owerror_t schedule_removeActiveSlot(slotOffset_t slotOffset, open_addr_t* neighb
    return E_SUCCESS;
 }
 
+owerror_t schedule_controllerRemoveActiveSlot(slotOffset_t slotOffset) {
+   scheduleEntry_t* slotContainer;
+   scheduleEntry_t* previousSlotWalker;
+
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+
+   // find the schedule entry
+   slotContainer = &schedule_vars.scheduleBuf[0];
+   while (slotContainer<=&schedule_vars.scheduleBuf[schedule_vars.maxActiveSlots-1]) {
+      if (slotContainer->slotOffset==slotOffset){
+         break;
+      }
+      slotContainer++;
+   }
+
+   // abort it could not find
+   if (slotContainer>&schedule_vars.scheduleBuf[schedule_vars.maxActiveSlots-1]) {
+      ENABLE_INTERRUPTS();
+      openserial_printCritical(
+              COMPONENT_SCHEDULE,ERR_FREEING_ERROR,
+              (errorparameter_t)0,
+              (errorparameter_t)0
+      );
+      return E_FAIL;
+   }
+
+   // remove from linked list
+   if (slotContainer->next==slotContainer) {
+      // this is the last active slot
+
+      // the next slot of this slot is NULL
+      slotContainer->next                   = NULL;
+
+      // current slot points to this slot
+      schedule_vars.currentScheduleEntry    = NULL;
+   } else  {
+      // this is NOT the last active slot
+
+      // find the previous in the schedule
+      previousSlotWalker                    = schedule_vars.currentScheduleEntry;
+
+      while (1) {
+         if (previousSlotWalker->next==slotContainer){
+            break;
+         }
+         previousSlotWalker                 = previousSlotWalker->next;
+      }
+
+      // remove this element from the linked list, i.e. have the previous slot
+      // "jump" to slotContainer's next
+      previousSlotWalker->next              = slotContainer->next;
+
+      // update current slot if points to slot I just removed
+      if (schedule_vars.currentScheduleEntry==slotContainer) {
+         schedule_vars.currentScheduleEntry = slotContainer->next;
+      }
+   }
+
+   // reset removed schedule entry
+   schedule_resetEntry(slotContainer);
+
+   ENABLE_INTERRUPTS();
+
+   return E_SUCCESS;
+}
+
 bool schedule_isSlotOffsetAvailable(uint16_t slotOffset){
    
    scheduleEntry_t* scheduleWalker;
@@ -522,7 +641,7 @@ void schedule_sixtopRemoveAllCells(
     uint8_t i;
 
     // remove all entries in schedule with previousHop address except BIER entries
-    for(i=0;i<MAXACTIVESLOTS;i++){
+    for(i=0;i<schedule_vars.maxActiveSlots;i++){
         if (!schedule_vars.scheduleBuf[i].trackID && packetfunctions_sameAddress(&(schedule_vars.scheduleBuf[i].neighbor),previousHop)){
            schedule_removeActiveSlot(
               schedule_vars.scheduleBuf[i].slotOffset,
@@ -530,6 +649,17 @@ void schedule_sixtopRemoveAllCells(
            );
         }
     }
+}
+
+//remove all bier cell
+void schedule_controllerRemoveAllBierCells(uint8_t slotFrameID){
+   uint8_t i;
+   // remove all BIER entries
+   for(i=0;i<schedule_vars.maxActiveSlots;i++){
+      if (schedule_vars.scheduleBuf[i].trackID ){
+         schedule_controllerRemoveActiveSlot(schedule_vars.scheduleBuf[i].slotOffset);
+      }
+   }
 }
 
 scheduleEntry_t* schedule_getCurrentScheduleEntry(){
@@ -741,7 +871,7 @@ void schedule_setBierDoNotSend(uint8_t trackID, uint16_t bitIndex, cellType_t ce
 	INTERRUPT_DECLARATION();
 	DISABLE_INTERRUPTS();
 
-	for (running_slotOffset=0;running_slotOffset<MAXACTIVESLOTS;running_slotOffset++) {
+	for (running_slotOffset=0;running_slotOffset<schedule_vars.maxActiveSlots;running_slotOffset++) {
 		if(schedule_vars.scheduleBuf[running_slotOffset].trackID==trackID &&
 				schedule_vars.scheduleBuf[running_slotOffset].bitIndex==bitIndex &&
 				schedule_vars.scheduleBuf[running_slotOffset].type==celltype){
@@ -758,7 +888,7 @@ void schedule_resetBierDoNotSend(){
 	INTERRUPT_DECLARATION();
 	DISABLE_INTERRUPTS();
 
-	for (running_slotOffset=0;running_slotOffset<MAXACTIVESLOTS;running_slotOffset++) {
+	for (running_slotOffset=0;running_slotOffset<schedule_vars.maxActiveSlots;running_slotOffset++) {
 		schedule_vars.scheduleBuf[running_slotOffset].bierDoNotSend = 0;
 
 	}
@@ -938,4 +1068,6 @@ void schedule_resetEntry(scheduleEntry_t* e) {
    e->lastUsedAsn.bytes2and3 = 0;
    e->lastUsedAsn.byte4      = 0;
    e->next                   = NULL;
+   e->trackID                = 0;
+   e->bitIndex               = 0;
 }

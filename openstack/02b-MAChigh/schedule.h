@@ -107,6 +107,8 @@ typedef struct {
    uint8_t         numTx;
    uint8_t         numTxACK;
    asn_t           lastUsedAsn;
+   uint8_t         trackID;
+   uint16_t        bitIndex;
 } debugScheduleEntry_t;
 END_PACK
 
@@ -116,17 +118,13 @@ typedef struct {
   bool             shared;
   slotOffset_t     slotOffset;
   channelOffset_t  channelOffset;
+  uint8_t          trackID;
+  uint16_t         bitIndex;
 }slotinfo_element_t;
-
-typedef struct {
-    slotOffset_t   slotOffset;
-    channelOffset_t channelOffset;
-}slotLoca_element_t;
 
 //=========================== variables =======================================
 
 typedef struct {
-   scheduleEntry_t  scheduleBuf[MAXACTIVESLOTS];
    scheduleEntry_t* currentScheduleEntry;
    frameLength_t    frameLength;
    frameLength_t    maxActiveSlots;
@@ -135,7 +133,10 @@ typedef struct {
    uint8_t          backoffExponent;
    uint8_t          backoff;
    uint8_t          debugPrintRow;
+   scheduleEntry_t  scheduleBuf[];
 } schedule_vars_t;
+
+
 
 //=========================== prototypes ======================================
 
@@ -158,7 +159,10 @@ owerror_t          schedule_addActiveSlot(
    uint8_t				trackID,
    uint16_t				bitIndex
 );
-
+void  schedule_controllerGetSlotInfo(
+        slotOffset_t         slotOffset,
+        slotinfo_element_t*  info
+);
 void               schedule_getSlotInfo(
    slotOffset_t         slotOffset,                      
    open_addr_t*         neighbor,
@@ -170,6 +174,9 @@ uint16_t           schedule_getMaxActiveSlots(void);
 owerror_t          schedule_removeActiveSlot(
    slotOffset_t         slotOffset,
    open_addr_t*         neighbor
+);
+owerror_t          schedule_controllerRemoveActiveSlot(
+        slotOffset_t         slotOffset
 );
 bool               schedule_isSlotOffsetAvailable(uint16_t slotOffset);
 // return the slot info which has a poor quality
@@ -183,6 +190,7 @@ void              schedule_sixtopRemoveAllCells(
    uint8_t        slotframeID,
    open_addr_t*   previousHop
 );
+void              schedule_controllerRemoveAllBierCells(uint8_t slotframeID);
 scheduleEntry_t*  schedule_getCurrentScheduleEntry();
 
 // from IEEE802154E

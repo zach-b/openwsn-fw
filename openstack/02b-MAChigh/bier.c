@@ -204,7 +204,7 @@ owerror_t bier_send_internal(OpenQueueEntry_t* msg) {
 	// assign a number of retries
 	msg->l2_retriesLeft = 1;
 	// record this packet's dsn (for matching the ACK)
-	msg->l2_dsn = sixtop_vars.dsn++;
+	msg->l2_dsn = sixtop_requestdsn();
 	// this is a new packet which I never attempted to send
 	msg->l2_numTxAttempts = 0;
 	// transmit with the default TX power
