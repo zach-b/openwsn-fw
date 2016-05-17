@@ -465,7 +465,6 @@ void openserial_scheduleCommands(void){
    uint8_t             trackID;
    uint8_t             rxCellNum;
    uint8_t             txCEllNum;
-   uint8_t             newMaxActiveSlots;
    open_addr_t         temp_neighbor;
    slotinfo_element_t  temp_slotinfo;
    slotOffset_t        slotOffset;
@@ -485,7 +484,6 @@ void openserial_scheduleCommands(void){
 
    if (operationId ==6) {
        newFrameLength = input_buffer[offset++];
-       newMaxActiveSlots = input_buffer[offset++];
    }
    else if (operationId <= 3) {
        //  CELL
@@ -597,7 +595,6 @@ void openserial_scheduleCommands(void){
          if (newFrameLength && (schedule_vars.frameLength != newFrameLength)) {
             schedule_setFrameLength(newFrameLength);
          }
-         schedule_vars.maxActiveSlots  = newMaxActiveSlots;
          break;
       default:
          openserial_printInfo(COMPONENT_OPENSERIAL,
