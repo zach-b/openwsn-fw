@@ -592,7 +592,7 @@ void openserial_scheduleCommands(void){
          schedule_controllerRemoveAllBierCells(targetSlotFrame);
          break;
       case 6:
-         if (newFrameLength && (schedule_vars.frameLength != newFrameLength)) {
+         if (newFrameLength && (SLOTFRAME_LENGTH != newFrameLength)) {
             schedule_setFrameLength(newFrameLength);
          }
          break;
