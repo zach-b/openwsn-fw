@@ -17,7 +17,7 @@
 
 The superframe repears over time and can be arbitrarly long.
 */
-#define SLOTFRAME_LENGTH    11 //should be 101
+#define SLOTFRAME_LENGTH    15 //should be 101
 
 //draft-ietf-6tisch-minimal-06
 #define SCHEDULE_MINIMAL_6TISCH_ACTIVE_CELLS                      1
@@ -25,7 +25,7 @@ The superframe repears over time and can be arbitrarly long.
 #define SCHEDULE_MINIMAL_6TISCH_CHANNELOFFSET                     0
 #define SCHEDULE_MINIMAL_6TISCH_DEFAULT_SLOTFRAME_HANDLE          1 //id of slotframe
 #define SCHEDULE_MINIMAL_6TISCH_DEFAULT_SLOTFRAME_NUMBER          1 //1 slotframe by default.
-#define SCHEDULE_MAXHARDCODED_CELLS								  4
+#define SCHEDULE_MAXHARDCODED_CELLS								  20
 
 #define NUMSERIALRX          3
 #define NUMSLOTSOFF          3 // the max number of cells that the mote can added into schedule, except 6TISCH_ACTIVE_CELLS and NUMSERIALRX. Initially those cells are off.
@@ -125,6 +125,7 @@ typedef struct {
 //=========================== variables =======================================
 
 typedef struct {
+   scheduleEntry_t  scheduleBuf[MAXACTIVESLOTS];
    scheduleEntry_t* currentScheduleEntry;
    frameLength_t    frameLength;
    frameLength_t    maxActiveSlots;
@@ -133,7 +134,6 @@ typedef struct {
    uint8_t          backoffExponent;
    uint8_t          backoff;
    uint8_t          debugPrintRow;
-   scheduleEntry_t  scheduleBuf[];
 } schedule_vars_t;
 
 
