@@ -188,6 +188,10 @@ void schedule_setFrameLength(frameLength_t newFrameLength) {
    if (newFrameLength <= schedule_vars.maxActiveSlots) {
       schedule_vars.maxActiveSlots = newFrameLength;
    }
+   openserial_printInfo(COMPONENT_SCHEDULE,
+                        ERR_SCHEDULE_LENGTHCHANGED,
+                        (errorparameter_t) schedule_vars.frameLength,
+                        (errorparameter_t) schedule_vars.maxActiveSlots);
    ENABLE_INTERRUPTS();
 }
 
