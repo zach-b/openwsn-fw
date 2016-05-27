@@ -255,15 +255,11 @@ enum {
    ERR_SIXTOP_RETURNCODE               = 0x3f, // sixtop return code {0} at sixtop state {1}
    ERR_SIXTOP_COUNT                    = 0x40, // there are {0} cells to request mote
    ERR_SIXTOP_LIST                     = 0x41, // the cells reserved to request mote contains slot {0} and slot {1}
-
    // control err
    ERR_SCHEDULE_ADDDUPLICATESLOT       = 0x42, // the slot {0} to be added is already in schedule
    ERR_SCHEDULE_OPTUNSCHE              = 0x43, // requested cell is unscheduled
    ERR_SCHEDULE_OPTUNKNOWN             = 0x44, // schedule command is not support
-   ERR_SCHEDULEOPT_LIST                = 0x45, // schedule command message received
-   ERR_SCHEDULECMD_TYSHA               = 0x46, // schedule command message received
-   ERR_SCHEDULECMD_INDEX               = 0x47, // schedule command message received
-   ERR_SCHEDULECMD_TRACK               = 0x48, // schedule command message received
+   ERR_SCHEDULE_LENGTHCHANGED          = 0x45, // slotframe length change
    // control ack
    ACK_SCHEDULE_LIST                   = 0x50, // reply acitve cells list
 };
