@@ -149,6 +149,20 @@ void board_reset(void) {
 }
 
 /**
+ * Erases a Flash sector to trigger the bootloader backdoor
+ */
+void board_erase(void) {
+    /* Disable the interrupts */
+    IntMasterDisable();
+
+    /* Eras the CCA flash page */
+    FlashMainPageErase(CC2538_FLASH_ADDRESS);
+
+    /* Reset the board */
+    SysCtrlReset();
+}
+
+/**
  * Configures the antenna using a RF switch
  * INT is the internal antenna (chip) configured through ANT1_SEL (V1)
  * EXT is the external antenna (connector) configured through ANT2_SEL (V2)

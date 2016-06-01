@@ -110,3 +110,7 @@ void board_reset()
 {
 }
 
+void board_erase()
+{
+}
+

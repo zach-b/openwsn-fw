@@ -129,6 +129,9 @@ void board_reset(){
   NVIC_GenerateSystemReset();
 }
 
+void board_erase(){
+}
+
 
  
 
