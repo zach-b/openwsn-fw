@@ -52,28 +52,87 @@ topology.
 */
 bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
 #ifdef FORCETOPOLOGY
+/*
+ * The hardcoded topology is the following :
+ *
+ *     f6----d8----4a
+ *    / |     |    | \
+ *   /  |     |    |  \
+ * 36   |     |    |   d9
+ *   \  |     |    |  /
+ *    \ |     |    | /
+ *     ec----c7----02
+ */
    bool returnVal;
    
    returnVal=FALSE;
    switch (idmanager_getMyID(ADDR_64B)->addr_64b[7]) {
-      case 0xdf:
+      case 0xd9:
          if (
-               ieee802514_header->src.addr_64b[7]==0x66
+               ieee802514_header->src.addr_64b[7]==0x4a ||
+               ieee802514_header->src.addr_64b[7]==0x02
             ) {
             returnVal=TRUE;
          }
          break;
-      case 0x66:
+      case 0x4a:
          if (
-               ieee802514_header->src.addr_64b[7]==0xdf ||
-               ieee802514_header->src.addr_64b[7]==0x4f
+               ieee802514_header->src.addr_64b[7]==0xd9 ||
+               ieee802514_header->src.addr_64b[7]==0x02 ||
+			   ieee802154_header->src.addr_64b[7]==0xd8
             ) {
             returnVal=TRUE;
          }
          break;
-      case 0x4f:
+      case 0x02:
          if (
-               ieee802514_header->src.addr_64b[7]==0x66
+               ieee802514_header->src.addr_64b[7]==0xd9 ||
+               ieee802514_header->src.addr_64b[7]==0x4a ||
+			   ieee802154_header->src.addr_64b[7]==0xc7
+            ) {
+            returnVal=TRUE;
+         }
+         break;
+      case 0xd8:
+         if (
+               ieee802514_header->src.addr_64b[7]==0x4a ||
+               ieee802514_header->src.addr_64b[7]==0xc7 ||
+			   ieee802154_header->src.addr_64b[7]==0xf6
+            ) {
+            returnVal=TRUE;
+         }
+         break;
+      case 0xc7:
+         if (
+               ieee802514_header->src.addr_64b[7]==0x02 ||
+               ieee802514_header->src.addr_64b[7]==0xd8 ||
+			   ieee802154_header->src.addr_64b[7]==0xec
+            ) {
+            returnVal=TRUE;
+         }
+         break;
+      case 0xf6:
+         if (
+               ieee802514_header->src.addr_64b[7]==0xd8 ||
+               ieee802514_header->src.addr_64b[7]==0xec ||
+			   ieee802154_header->src.addr_64b[7]==0x36
+            ) {
+            returnVal=TRUE;
+         }
+         break;
+      case 0xec:
+         if (
+               ieee802514_header->src.addr_64b[7]==0xc7 ||
+               ieee802514_header->src.addr_64b[7]==0xf6 ||
+			   ieee802154_header->src.addr_64b[7]==0x36
+            ) {
+            returnVal=TRUE;
+         }
+         break;
+      case 0x36:
+         if (
+               ieee802514_header->src.addr_64b[7]==0xf6 ||
+               ieee802514_header->src.addr_64b[7]==0xec
             ) {
             returnVal=TRUE;
          }
