@@ -232,6 +232,9 @@ void board_reset(void)
  /* No Handlers added */
 }
 
+void board_erase(){
+}
+
 /* 
  * @brief TRX END and other Transceiver Interrupt 
  *        Handler for AT86RFX

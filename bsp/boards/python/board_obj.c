@@ -89,4 +89,7 @@ void board_reset(OpenMote* self) {
 #endif
 }
 
+void board_erase(){
+}
+
 //=========================== private =========================================

@@ -109,6 +109,8 @@ void board_reset() {
    WDTCTL = (WDTPW+0x1200) + WDTHOLD; // writing a wrong watchdog password to causes handler to reset
 }
 
+void board_erase(){
+}
 //=========================== private =========================================
 
 //=========================== interrupt handlers ==============================

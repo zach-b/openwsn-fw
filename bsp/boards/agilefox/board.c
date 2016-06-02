@@ -111,3 +111,6 @@ void board_sleep() {
 void board_reset(){
 }
 
+void board_erase(){
+}
+
