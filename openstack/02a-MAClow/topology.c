@@ -51,7 +51,6 @@ topology.
 \return FALSE if the packet should be silently dropped.
 */
 bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
-#ifdef FORCETOPOLOGY
 /*
  * The hardcoded topology is the following :
  *
@@ -79,7 +78,7 @@ bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
          if (
                ieee802514_header->src.addr_64b[7]==0xd9 ||
                ieee802514_header->src.addr_64b[7]==0x02 ||
-			   ieee802154_header->src.addr_64b[7]==0xd8
+			   ieee802514_header->src.addr_64b[7]==0xd8
             ) {
             returnVal=TRUE;
          }
@@ -88,7 +87,7 @@ bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
          if (
                ieee802514_header->src.addr_64b[7]==0xd9 ||
                ieee802514_header->src.addr_64b[7]==0x4a ||
-			   ieee802154_header->src.addr_64b[7]==0xc7
+			   ieee802514_header->src.addr_64b[7]==0xc7
             ) {
             returnVal=TRUE;
          }
@@ -97,7 +96,7 @@ bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
          if (
                ieee802514_header->src.addr_64b[7]==0x4a ||
                ieee802514_header->src.addr_64b[7]==0xc7 ||
-			   ieee802154_header->src.addr_64b[7]==0xf6
+			   ieee802514_header->src.addr_64b[7]==0xf6
             ) {
             returnVal=TRUE;
          }
@@ -106,7 +105,7 @@ bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
          if (
                ieee802514_header->src.addr_64b[7]==0x02 ||
                ieee802514_header->src.addr_64b[7]==0xd8 ||
-			   ieee802154_header->src.addr_64b[7]==0xec
+			   ieee802514_header->src.addr_64b[7]==0xec
             ) {
             returnVal=TRUE;
          }
@@ -115,7 +114,7 @@ bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
          if (
                ieee802514_header->src.addr_64b[7]==0xd8 ||
                ieee802514_header->src.addr_64b[7]==0xec ||
-			   ieee802154_header->src.addr_64b[7]==0x36
+			   ieee802514_header->src.addr_64b[7]==0x36
             ) {
             returnVal=TRUE;
          }
@@ -124,7 +123,7 @@ bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
          if (
                ieee802514_header->src.addr_64b[7]==0xc7 ||
                ieee802514_header->src.addr_64b[7]==0xf6 ||
-			   ieee802154_header->src.addr_64b[7]==0x36
+			   ieee802514_header->src.addr_64b[7]==0x36
             ) {
             returnVal=TRUE;
          }
@@ -139,9 +138,6 @@ bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
          break;   
    }
    return returnVal;
-#else
-   return TRUE;
-#endif
 }
 
 //=========================== private =========================================
