@@ -223,6 +223,11 @@ owerror_t bier_send_internal(OpenQueueEntry_t* msg) {
 bool bier_macIsBitSet(OpenQueueEntry_t* msg, uint8_t bitindex){
 	uint8_t bitmask;
 
+	// Check that bitindex is not bigger than the bitmap length
+	if(bitindex/8 >= msg->l2_bierBitmap){
+		return FALSE;
+	}
+
 	bitmask = (uint8_t)1 << (7-schedule_getBitIndex()%8);
 	return (*(msg->l2_bierBitmap + bitindex/8) & bitmask)!=0;
 }
@@ -230,12 +235,22 @@ bool bier_macIsBitSet(OpenQueueEntry_t* msg, uint8_t bitindex){
 void bier_macSetBit(OpenQueueEntry_t* msg, uint8_t bitindex){
 	uint8_t bitmask;
 
+	// Check that bitindex is not bigger than the bitmap length
+	if(bitindex/8 >= msg->l2_bierBitmap){
+		return;
+	}
+
 	bitmask = (uint8_t)1 << (7-schedule_getBitIndex()%8);
 	*(msg->l2_bierBitmap + bitindex/8) |= bitmask;
 }
 
 void bier_macResetBit(OpenQueueEntry_t* msg, uint8_t bitindex){
 	uint8_t bitmask;
+
+	// Check that bitindex is not bigger than the bitmap length
+	if(bitindex/8 >= msg->l2_bierBitmap){
+		return;
+	}
 
 	bitmask = (uint8_t)1 << (7-schedule_getBitIndex()%8);
 	*(msg->l2_bierBitmap + bitindex/8) &= ~bitmask;
