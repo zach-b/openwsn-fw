@@ -224,7 +224,7 @@ bool bier_macIsBitSet(OpenQueueEntry_t* msg, uint8_t bitindex){
 	uint8_t bitmask;
 
 	// Check that bitindex is not bigger than the bitmap length
-	if(bitindex/8 >= msg->l2_bierBitmap){
+	if(bitindex/8 >= msg->l2_bierBitmapLength){
 		return FALSE;
 	}
 
@@ -236,7 +236,7 @@ void bier_macSetBit(OpenQueueEntry_t* msg, uint8_t bitindex){
 	uint8_t bitmask;
 
 	// Check that bitindex is not bigger than the bitmap length
-	if(bitindex/8 >= msg->l2_bierBitmap){
+	if(bitindex/8 >= msg->l2_bierBitmapLength){
 		return;
 	}
 
@@ -248,7 +248,7 @@ void bier_macResetBit(OpenQueueEntry_t* msg, uint8_t bitindex){
 	uint8_t bitmask;
 
 	// Check that bitindex is not bigger than the bitmap length
-	if(bitindex/8 >= msg->l2_bierBitmap){
+	if(bitindex/8 >= msg->l2_bierBitmapLength){
 		return;
 	}
 
