@@ -28,7 +28,19 @@ The superframe repears over time and can be arbitrarly long.
 #define SCHEDULE_MAXHARDCODED_CELLS								  4
 
 #define NUMSERIALRX          3
-#define NUMSLOTSOFF          3 // the max number of cells that the mote can added into schedule, except 6TISCH_ACTIVE_CELLS and NUMSERIALRX. Initially those cells are off.
+
+/*
+  NUMSLOTSOFF is the max number of cells that the mote can add into schedule, 
+  besides 6TISCH_ACTIVE_CELLS and NUMSERIALRX Cell. Initially those cells are 
+  off. The value of NUMSLOTSOFF can be changed but the value should satisfy:
+ 
+        MAXACTIVESLOTS < SLOTFRAME_LENGTH 
+        
+  This would make sure number of slots are available (SLOTFRAME_LENGTH-MAXACTIVESLOTS) 
+  for seiral port to tranmit data to dagroot. 
+*/
+
+#define NUMSLOTSOFF          3
 
 /**
 \brief Maximum number of active slots in a superframe.
@@ -178,7 +190,7 @@ void              schedule_sixtopRemoveAllCells(
    uint8_t        slotframeID,
    open_addr_t*   previousHop
 );
-scheduleEntry_t*  schedule_getCurrentScheduleEntry();
+scheduleEntry_t*  schedule_getCurrentScheduleEntry(void);
 
 // from IEEE802154E
 void               schedule_syncSlotOffset(slotOffset_t targetSlotOffset);
