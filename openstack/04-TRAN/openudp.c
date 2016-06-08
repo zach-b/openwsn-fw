@@ -117,6 +117,9 @@ void openudp_receive(OpenQueueEntry_t* msg) {
       case WKP_UDP_INJECT:
          uinject_receive(msg);
          break;
+      case 1009 :
+    	  openqueue_freePacketBuffer(msg);
+    	  break;
       default:
          openserial_printError(COMPONENT_OPENUDP,ERR_UNSUPPORTED_PORT_NUMBER,
                                (errorparameter_t)msg->l4_destination_port,
