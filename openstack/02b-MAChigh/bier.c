@@ -79,11 +79,13 @@ void bier_notifEndOfSlotFrame() {
 					(errorparameter_t)*msg->l2_bierBitmap,
 					(errorparameter_t)0);
 		}
-		// print difference with previous ASN :
-		openserial_printInfo(COMPONENT_BIER,
-				ERR_UNSUPPORTED_PORT_NUMBER,
-				(errorparameter_t)bier_asnDiff(&bier_vars.last_asn, &msg->l2_asn),
-				(errorparameter_t)1009);
+		// print difference with previous ASN if different from slotframe size:
+		if(bier_asnDiff(&bier_vars.last_asn, &msg->l2_asn) != (uint16_t)schedule_getFrameLength()){
+			openserial_printInfo(COMPONENT_BIER,
+					ERR_UNSUPPORTED_PORT_NUMBER,
+					(errorparameter_t)bier_asnDiff(&bier_vars.last_asn, &msg->l2_asn),
+					(errorparameter_t)1009);
+		}
 		// store previous ASN
 		memcpy(&bier_vars.last_asn, &msg->l2_asn, sizeof(asn_t));
 		// send up the stack
