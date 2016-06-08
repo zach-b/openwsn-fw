@@ -15,6 +15,7 @@
 //=========================== module variables ================================
 
 typedef struct {
+	asn_t last_asn;
 } bier_vars_t;
 
 //=========================== prototypes ======================================
@@ -29,6 +30,7 @@ void	  bier_notifEndOfSlotFrame(void);
 bool	  bier_macIsBitSet(OpenQueueEntry_t* msg, uint8_t bitindex);
 void 	  bier_macResetBit(OpenQueueEntry_t* msg, uint8_t bitindex);
 void	  bier_macSetBit(OpenQueueEntry_t* msg, uint8_t bitindex);
+uint16_t  bier_asnDiff(asn_t* someASN, asn_t* anotherASN);
 
 /**
 \}

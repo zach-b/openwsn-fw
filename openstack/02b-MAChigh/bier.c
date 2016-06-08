@@ -79,11 +79,18 @@ void bier_notifEndOfSlotFrame() {
 					(errorparameter_t)*msg->l2_bierBitmap,
 					(errorparameter_t)0);
 		}
+		// print difference with previous ASN :
+		openserial_printInfo(COMPONENT_BIER,
+				ERR_UNSUPPORTED_PORT_NUMBER,
+				(errorparameter_t)bier_asnDiff(&bier_vars.last_asn, &msg->l2_asn),
+				(errorparameter_t)1009);
+		// store previous ASN
+		memcpy(&bier_vars.last_asn, &msg->l2_asn, sizeof(asn_t));
+		// send up the stack
 		iphc_receive(msg);
 		msg = openqueue_bierGetPacketToSendUp();
 	}
 }
-
 
 void task_bierNotifReceive() {
     OpenQueueEntry_t*    msg;
@@ -218,6 +225,32 @@ owerror_t bier_send_internal(OpenQueueEntry_t* msg) {
 	                        );
 	msg->owner  = COMPONENT_BIER_TO_IEEE802154E;
     return E_SUCCESS;
+}
+
+/**
+/brief Difference between some older ASN and another ASN.
+
+\param[in] someASN some ASN to compare to anotherASN
+
+\returns The ASN difference, or 0xffff if more than 65535 different
+*/
+uint16_t bier_asnDiff(asn_t* someASN, asn_t* anotherASN) {
+   uint16_t diff;
+   if (anotherASN->byte4 != someASN->byte4) {
+      return 0xFFFF;
+   }
+
+   diff = 0;
+   if (anotherASN->bytes2and3 == someASN->bytes2and3) {
+      return anotherASN->bytes0and1-someASN->bytes0and1;
+   } else if (anotherASN->bytes2and3-someASN->bytes2and3==1) {
+      diff  = anotherASN->bytes0and1;
+      diff += 0xffff-someASN->bytes0and1;
+      diff += 1;
+   } else {
+      diff = 0xFFFF;
+   }
+   return diff;
 }
 
 bool bier_macIsBitSet(OpenQueueEntry_t* msg, uint8_t bitindex){
