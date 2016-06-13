@@ -181,6 +181,13 @@ void ieee154e_getAsn(uint8_t* array) {return;}
 void neighbors_updateMyDAGrankAndNeighborPreference(void) {return;}
 bool neighbors_getPreferredParentEui64(open_addr_t* neighbor){return TRUE;}
 void schedule_startDAGroot(void) {return;}
+bool schedule_isSlotOffsetAvailable(uint16_t slotoffset) {return TRUE;}
+void schedule_addActiveSlot(uint16_t slotOffset, uint8_t type, bool shared, uint8_t channelOffset, open_addr_t* neighbor, uint8_t trackID, uint16_t bitIndex) {return;}
+void schedule_controllerRemoveActiveSlot (uint16_t slotOffset, open_addr_t* neighbor) {return;}
+void schedule_controllerGetSlotInfo(uint16_t slotOffset, open_addr_t* neighbor, void* info) {return;}
+uint8_t schedule_getCellsCounts(uint8_t frameID, uint8_t type, open_addr_t* neighbor) {return 0;}
+void schedule_controllerRemoveAllBierCells(uint8_t slotFrameID) {return;}
+
 
 bool debugPrint_asn(void)       {return TRUE;}
 bool debugPrint_isSync(void)    {return TRUE;}
