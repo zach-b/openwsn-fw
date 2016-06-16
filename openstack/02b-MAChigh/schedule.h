@@ -121,7 +121,7 @@ typedef struct {
    uint8_t         numTxACK;
    asn_t           lastUsedAsn;
    uint8_t         trackID;
-   uint16_t        bitIndex;
+   uint16_t        bundleID;
 } debugScheduleEntry_t;
 END_PACK
 
@@ -132,7 +132,8 @@ typedef struct {
   slotOffset_t     slotOffset;
   channelOffset_t  channelOffset;
   uint8_t          trackID;
-  uint16_t         bitIndex;
+  uint16_t         bundleID;
+  bool             bier;
 }slotinfo_element_t;
 
 //=========================== variables =======================================

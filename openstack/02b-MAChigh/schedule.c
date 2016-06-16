@@ -137,8 +137,8 @@ bool debugPrint_schedule() {
    );
    temp.trackID                       = \
       schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].trackID;
-   temp.bitIndex                       = \
-      schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].bitIndex;
+   temp.bundleID                       = \
+      schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].bundleID;
    
    // send status data over serial port
    openserial_printStatus(
@@ -293,7 +293,7 @@ void  schedule_controllerGetSlotInfo(
          info->shared                    = slotContainer->shared;
          info->channelOffset             = slotContainer->channelOffset;
          info->trackID                   = slotContainer->trackID;
-         info->bitIndex                  = slotContainer->bitIndex;
+         info->bundleID                  = slotContainer->bundleID;
          return; //as this is an update. No need to re-insert as it is in the same position on the list.
       }
       slotContainer++;
@@ -303,7 +303,7 @@ void  schedule_controllerGetSlotInfo(
    info->shared                    = FALSE;
    info->channelOffset             = 0;//set to zero if not set.
    info->trackID                   = 0;
-   info->bitIndex                  = 0;
+   info->bundleID                  = 0;
 }
 
 /**
@@ -840,9 +840,9 @@ uint8_t schedule_getTrackID() {
 }
 
 /**
-\brief Get the bitIndex of the current schedule entry.
+\brief Get the bundleID of the current schedule entry.
 
-\returns The bitIndex of the current schedule entry.
+\returns The bundleID of the current schedule entry.
 */
 uint16_t schedule_getBundleID() {
    uint16_t returnVal;
@@ -1097,5 +1097,5 @@ void schedule_resetEntry(scheduleEntry_t* e) {
    e->bierDoNotSend          = FALSE;
    e->next                   = NULL;
    e->trackID                = 0;
-   e->bitIndex               = 0;
+   e->bundleID               = 0;
 }
