@@ -105,6 +105,8 @@ uint8_t   sixtop_requestdsn();
 void      sixtop_addORremoveCellByInfo(uint8_t code,open_addr_t*  neighbor,cellInfo_ht* cellInfo);
 // maintaining
 void      sixtop_maintaining(uint16_t slotOffset,open_addr_t* neighbor);
+// dsn for BIER
+uint8_t sixtop_requestdsn(void);
 // from upper layer
 owerror_t sixtop_send(OpenQueueEntry_t *msg);
 // from lower layer

@@ -471,7 +471,7 @@ void openserial_scheduleCommands(void){
    uint8_t             targetSlotFrame;
    uint8_t             operationId;
    uint8_t             typeId;
-   uint16_t            bitIndex;
+   uint16_t            bundleID;
    uint8_t             shared;
    uint8_t             input_buffer[10];
    uint8_t             numDataBytes;
@@ -479,6 +479,7 @@ void openserial_scheduleCommands(void){
    uint8_t             trackID;
    uint8_t             rxCellNum;
    uint8_t             txCEllNum;
+   bool                bier;
    open_addr_t         temp_neighbor;
    slotinfo_element_t  temp_slotinfo;
    slotOffset_t        slotOffset;
@@ -514,10 +515,12 @@ void openserial_scheduleCommands(void){
            //  shared boolean
            shared = input_buffer[offset++];
            //  bit index
-           bitIndex = ((input_buffer[offset++] << 8) & 0xff00);
-           bitIndex = bitIndex  | (input_buffer[offset++] & 0x00ff);
+           bundleID = ((input_buffer[offset++] << 8) & 0xff00);
+           bundleID = bundleID  | (input_buffer[offset++] & 0x00ff);
            //  trackID
            trackID = input_buffer[offset++];
+           // bier
+           bier = input_buffer[offset++];
        }
    }
    switch (operationId) {
@@ -530,7 +533,8 @@ void openserial_scheduleCommands(void){
                     channelOffset,                    // channel offset
                     &temp_neighbor,                       // neighbor
                     trackID,                                      // track ID
-                    bitIndex                                      // bierbitindex
+                    bundleID,                                      // bierbitindex
+					bier
             );
          }
          else {
@@ -551,7 +555,8 @@ void openserial_scheduleCommands(void){
                 channelOffset,                    // channel offset
                 &temp_neighbor,                       // neighbor
                 trackID,                                      // track ID
-                bitIndex                                      // bierbitindex
+                bundleID,                                      // bierbitindex
+				bier
          );
          break;
       case 2: //remap a slot
@@ -565,7 +570,8 @@ void openserial_scheduleCommands(void){
                        remapchannelOffset,                    // channel offset
                        &temp_neighbor,                       // neighbor
                        temp_slotinfo.trackID,                                      // track ID
-                       temp_slotinfo.bitIndex
+                       temp_slotinfo.bundleID,
+					   temp_slotinfo.bier
                );
                schedule_controllerRemoveActiveSlot(slotOffset);
             }

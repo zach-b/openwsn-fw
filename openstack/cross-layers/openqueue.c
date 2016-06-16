@@ -239,7 +239,7 @@ OpenQueueEntry_t* openqueue_bierGetDataPacketTrack(uint8_t trackID) {
 	   INTERRUPT_DECLARATION();
 	   DISABLE_INTERRUPTS();
 	   if (trackID != 0) {
-	      // look for a packet to send on this bundle
+	      // look for a packet to send on this track
 	      for (i=0;i<QUEUELENGTH;i++) {
 	         if ((openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IEEE802154E || openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IPHC)&&
 	            openqueue_vars.queue[i].l2_trackID == trackID){
@@ -254,7 +254,7 @@ OpenQueueEntry_t* openqueue_bierGetDataPacketTrack(uint8_t trackID) {
 
 //======= called by IEEE80215E
 
-OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
+OpenQueueEntry_t* openqueue_macGetDataPacket(uint8_t trackID, open_addr_t* toNeighbor) {
    uint8_t i;
    INTERRUPT_DECLARATION();
    DISABLE_INTERRUPTS();
@@ -262,7 +262,8 @@ OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
       // a neighbor is specified, look for a packet unicast to that neigbhbor
       for (i=0;i<QUEUELENGTH;i++) {
          if (openqueue_vars.queue[i].owner==COMPONENT_SIXTOP_TO_IEEE802154E &&
-            packetfunctions_sameAddress(toNeighbor,&openqueue_vars.queue[i].l2_nextORpreviousHop)) {
+            packetfunctions_sameAddress(toNeighbor,&openqueue_vars.queue[i].l2_nextORpreviousHop) &&
+			openqueue_vars.queue[i].l2_trackID == trackID) {
             ENABLE_INTERRUPTS();
             return &openqueue_vars.queue[i];
          }
@@ -272,6 +273,7 @@ OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
       // or an KA (created by RES, but not broadcast)
       for (i=0;i<QUEUELENGTH;i++) {
          if (openqueue_vars.queue[i].owner==COMPONENT_SIXTOP_TO_IEEE802154E &&
+        	 openqueue_vars.queue[i].l2_trackID==trackID &&
              ( openqueue_vars.queue[i].creator!=COMPONENT_SIXTOP ||
                 (
                    openqueue_vars.queue[i].creator==COMPONENT_SIXTOP &&
@@ -304,22 +306,22 @@ OpenQueueEntry_t* openqueue_macGetEBPacket() {
    return NULL;
 }
 
-OpenQueueEntry_t* openqueue_macGetDataPacketTrack(uint8_t trackID) {
+OpenQueueEntry_t* openqueue_macGetDataPacketBier(uint8_t trackID) {
 	uint8_t i;
-	   INTERRUPT_DECLARATION();
-	   DISABLE_INTERRUPTS();
-	   if (trackID != 0) {
-	      // look for a packet to send on this bundle
-	      for (i=0;i<QUEUELENGTH;i++) {
-	         if (openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IEEE802154E &&
-	            openqueue_vars.queue[i].l2_trackID == trackID) {
-	            ENABLE_INTERRUPTS();
-	            return &openqueue_vars.queue[i];
-	         }
-	      }
-	   }
-	   ENABLE_INTERRUPTS();
-	   return NULL;
+	INTERRUPT_DECLARATION();
+	DISABLE_INTERRUPTS();
+	if (trackID != 0) {
+		// look for a packet to send on this bundle
+		for (i=0;i<QUEUELENGTH;i++) {
+			if (openqueue_vars.queue[i].owner==COMPONENT_BIER_TO_IEEE802154E &&
+					openqueue_vars.queue[i].l2_trackID == trackID) {
+				ENABLE_INTERRUPTS();
+				return &openqueue_vars.queue[i];
+			}
+		}
+	}
+	ENABLE_INTERRUPTS();
+	return NULL;
 }
 
 //=========================== private =========================================
@@ -341,6 +343,8 @@ void openqueue_reset_entry(OpenQueueEntry_t* entry) {
    entry->l2_retriesLeft               = 0;
    entry->l2_IEListPresent             = 0;
    entry->l2_payloadIEpresent          = 0;
+   entry->l2_trackID                   = 0;
+   entry->l2_bundleID                  = 0;
    //l2-security
    entry->l2_securityLevel             = 0;
 }

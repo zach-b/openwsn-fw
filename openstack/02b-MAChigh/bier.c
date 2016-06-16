@@ -263,7 +263,7 @@ bool bier_macIsBitSet(OpenQueueEntry_t* msg, uint8_t bitindex){
 		return FALSE;
 	}
 
-	bitmask = (uint8_t)1 << (7-schedule_getBitIndex()%8);
+	bitmask = (uint8_t)1 << (7-schedule_getBundleID()%8);
 	return (*(msg->l2_bierBitmap + bitindex/8) & bitmask)!=0;
 }
 
@@ -275,7 +275,7 @@ void bier_macSetBit(OpenQueueEntry_t* msg, uint8_t bitindex){
 		return;
 	}
 
-	bitmask = (uint8_t)1 << (7-schedule_getBitIndex()%8);
+	bitmask = (uint8_t)1 << (7-schedule_getBundleID()%8);
 	*(msg->l2_bierBitmap + bitindex/8) |= bitmask;
 }
 
@@ -287,6 +287,6 @@ void bier_macResetBit(OpenQueueEntry_t* msg, uint8_t bitindex){
 		return;
 	}
 
-	bitmask = (uint8_t)1 << (7-schedule_getBitIndex()%8);
+	bitmask = (uint8_t)1 << (7-schedule_getBundleID()%8);
 	*(msg->l2_bierBitmap + bitindex/8) &= ~bitmask;
 }

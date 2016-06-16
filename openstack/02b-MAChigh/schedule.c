@@ -53,7 +53,8 @@ void schedule_init() {
          0,                                     // channel offset
          &temp_neighbor,                        // neighbor
 		 0,										// trackID
-		 0										// bierbitindex
+		 0,										// bundleID
+		 FALSE                                  // bier
       );
    }
 }
@@ -88,7 +89,8 @@ void schedule_startDAGroot() {
          SCHEDULE_MINIMAL_6TISCH_CHANNELOFFSET,    // channel offset
          &temp_neighbor,                      // neighbor
 		 0,									  // trackID
-		 0									  // bitindex
+		 0,									  // bundleID
+		 FALSE                                // bier
       );
    }
 }
@@ -135,8 +137,8 @@ bool debugPrint_schedule() {
    );
    temp.trackID                       = \
       schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].trackID;
-   temp.bitIndex                       = \
-      schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].bitIndex;
+   temp.bundleID                       = \
+      schedule_vars.scheduleBuf[schedule_vars.debugPrintRow].bundleID;
    
    // send status data over serial port
    openserial_printStatus(
@@ -291,7 +293,7 @@ void  schedule_controllerGetSlotInfo(
          info->shared                    = slotContainer->shared;
          info->channelOffset             = slotContainer->channelOffset;
          info->trackID                   = slotContainer->trackID;
-         info->bitIndex                  = slotContainer->bitIndex;
+         info->bundleID                  = slotContainer->bundleID;
          return; //as this is an update. No need to re-insert as it is in the same position on the list.
       }
       slotContainer++;
@@ -301,7 +303,7 @@ void  schedule_controllerGetSlotInfo(
    info->shared                    = FALSE;
    info->channelOffset             = 0;//set to zero if not set.
    info->trackID                   = 0;
-   info->bitIndex                  = 0;
+   info->bundleID                  = 0;
 }
 
 /**
@@ -321,7 +323,8 @@ owerror_t schedule_addActiveSlot(
       channelOffset_t channelOffset,
       open_addr_t*    neighbor,
 	  uint8_t         trackID,
-	  uint16_t		  bitIndex
+	  uint16_t		  bundleID,
+	  bool            bier
    ) {
 
    scheduleEntry_t* slotContainer;
@@ -357,8 +360,9 @@ owerror_t schedule_addActiveSlot(
    slotContainer->shared                    = shared;
    slotContainer->channelOffset             = channelOffset;
    slotContainer->trackID					= trackID;
-   slotContainer->bitIndex					= bitIndex;
+   slotContainer->bundleID					= bundleID;
    slotContainer->bierDoNotSend				= FALSE;
+   slotContainer->bier						= bier;
    memcpy(&slotContainer->neighbor,neighbor,sizeof(open_addr_t));
    
    // insert in circular list
@@ -594,7 +598,7 @@ scheduleEntry_t* schedule_statistic_poorLinkQuality(){
       if(
          scheduleWalker->numTx > MIN_NUMTX_FOR_PDR                     &&\
          PDR_THRESHOLD > 100*scheduleWalker->numTxACK/scheduleWalker->numTx &&\
-		 !scheduleWalker->trackID	// Do not care about BIER slots here
+		 !scheduleWalker->bier	// Do not care about BIER slots here
       ){
          break;
       }
@@ -627,7 +631,7 @@ uint16_t  schedule_getCellsCounts(uint8_t frameID,cellType_t type, open_addr_t* 
        if(
           packetfunctions_sameAddress(&(scheduleWalker->neighbor),neighbor) &&
           type == scheduleWalker->type &&
-		  !scheduleWalker->trackID
+		  !scheduleWalker->bier
        ){
            count++;
        }
@@ -646,7 +650,7 @@ void schedule_sixtopRemoveAllCells(
 
     // remove all entries in schedule with previousHop address except BIER entries
     for(i=0;i<schedule_vars.maxActiveSlots;i++){
-        if (!schedule_vars.scheduleBuf[i].trackID && packetfunctions_sameAddress(&(schedule_vars.scheduleBuf[i].neighbor),previousHop)){
+        if (!schedule_vars.scheduleBuf[i].bier && packetfunctions_sameAddress(&(schedule_vars.scheduleBuf[i].neighbor),previousHop)){
            schedule_removeActiveSlot(
               schedule_vars.scheduleBuf[i].slotOffset,
               previousHop
@@ -836,21 +840,37 @@ uint8_t schedule_getTrackID() {
 }
 
 /**
-\brief Get the bitIndex of the current schedule entry.
+\brief Get the bundleID of the current schedule entry.
 
-\returns The bitIndex of the current schedule entry.
+\returns The bundleID of the current schedule entry.
 */
-uint16_t schedule_getBitIndex() {
+uint16_t schedule_getBundleID() {
    uint16_t returnVal;
 
    INTERRUPT_DECLARATION();
    DISABLE_INTERRUPTS();
 
-   returnVal = schedule_vars.currentScheduleEntry->bitIndex;
+   returnVal = schedule_vars.currentScheduleEntry->bundleID;
 
    ENABLE_INTERRUPTS();
 
    return returnVal;
+}
+
+/**
+\brief returns if there was a successful transmit on this bundle on this time frame.
+*/
+bool schedule_getBier(){
+	   bool returnVal;
+
+	   INTERRUPT_DECLARATION();
+	   DISABLE_INTERRUPTS();
+
+	   returnVal = schedule_vars.currentScheduleEntry->bier;
+
+	   ENABLE_INTERRUPTS();
+
+	   return returnVal;
 }
 
 /**
@@ -877,7 +897,7 @@ void schedule_setBierDoNotSend(uint8_t trackID, uint16_t bitIndex, cellType_t ce
 
 	for (running_slotOffset=0;running_slotOffset<schedule_vars.maxActiveSlots;running_slotOffset++) {
 		if(schedule_vars.scheduleBuf[running_slotOffset].trackID==trackID &&
-				schedule_vars.scheduleBuf[running_slotOffset].bitIndex==bitIndex &&
+				schedule_vars.scheduleBuf[running_slotOffset].bundleID==bitIndex &&
 				schedule_vars.scheduleBuf[running_slotOffset].type==celltype){
 			schedule_vars.scheduleBuf[running_slotOffset].bierDoNotSend = 1;
 		}
@@ -964,7 +984,7 @@ bool schedule_isLastSlotOfBundle() {
 	   scheduleWalker = nextScheduleWalker;
 	   nextScheduleWalker = nextScheduleWalker->next;
 	   if(scheduleWalker->trackID == schedule_vars.currentScheduleEntry->trackID &&
-			   scheduleWalker->bitIndex == schedule_vars.currentScheduleEntry->bitIndex &&
+			   scheduleWalker->bundleID == schedule_vars.currentScheduleEntry->bundleID &&
 			   scheduleWalker->type == schedule_vars.currentScheduleEntry->type){
 		   ENABLE_INTERRUPTS();
 		   return FALSE;
@@ -1071,7 +1091,11 @@ void schedule_resetEntry(scheduleEntry_t* e) {
    e->lastUsedAsn.bytes0and1 = 0;
    e->lastUsedAsn.bytes2and3 = 0;
    e->lastUsedAsn.byte4      = 0;
+   e->trackID                = 0;
+   e->bundleID               = 0;
+   e->bier                   = FALSE;
+   e->bierDoNotSend          = FALSE;
    e->next                   = NULL;
    e->trackID                = 0;
-   e->bitIndex               = 0;
+   e->bundleID               = 0;
 }

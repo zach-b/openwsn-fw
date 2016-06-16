@@ -931,16 +931,16 @@ port_INLINE void activity_ti1ORri1() {
          // check whether we can send
          if (schedule_getOkToSend()) {
         	// check if this slot is in a BIER bundle (trackID != 0)
-        	if(schedule_getTrackID() && cellType==CELLTYPE_TX){
+        	if(schedule_getBier() && cellType==CELLTYPE_TX){
         		if(schedule_getBierDoNotSend()){
             		// Sending already worked, go to sleep
         			endSlot();
         			break;
         		}
-        		ieee154e_vars.dataToSend = openqueue_macGetDataPacketTrack(schedule_getTrackID());
+        		ieee154e_vars.dataToSend = openqueue_macGetDataPacketBier(schedule_getTrackID());
         	} else { // regular slot
         		schedule_getNeighbor(&neighbor);
-        		ieee154e_vars.dataToSend = openqueue_macGetDataPacket(&neighbor);
+        		ieee154e_vars.dataToSend = openqueue_macGetDataPacket(schedule_getTrackID(), &neighbor);
         		if ((ieee154e_vars.dataToSend==NULL) && (cellType==CELLTYPE_TXRX)) {
         			couldSendEB=TRUE;
         			// look for an EB packet in the queue
@@ -958,9 +958,9 @@ port_INLINE void activity_ti1ORri1() {
         	 }
          } else {
         	 // in BIER mode, check if the bit is set, if so reset it, else endslot
-        	 if(schedule_getTrackID()){
-        		 if(bier_macIsBitSet(ieee154e_vars.dataToSend, schedule_getBitIndex())){
-        			 bier_macResetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+        	 if(schedule_getBier()){
+        		 if(bier_macIsBitSet(ieee154e_vars.dataToSend, schedule_getBundleID())){
+        			 bier_macResetBit(ieee154e_vars.dataToSend, schedule_getBundleID());
         			 ieee154e_vars.wasBitReset = TRUE;
         			 //openserial_printInfo(COMPONENT_IEEE802154E, ERR_BIER_FORWARDED, (errorparameter_t)*(ieee154e_vars.dataToSend->l2_bierBitmap), (errorparameter_t)*(ieee154e_vars.dataToSend->l2_bierBitmap+1));
         		 } else{
@@ -1059,9 +1059,9 @@ port_INLINE void activity_ti2() {
    changeState(S_TXDATAPREPARE);
 
    // for a BIER packet set the ack requested bit accordingly
-   if (schedule_getTrackID() && schedule_isLastSlotOfBundle()) {
+   if (schedule_getBier() && schedule_isLastSlotOfBundle()) {
 	  ieee802154_setAckRequired(ieee154e_vars.dataToSend, FALSE);
-   } else if (schedule_getTrackID()){
+   } else if (schedule_getBier()){
 	  ieee802154_setAckRequired(ieee154e_vars.dataToSend, TRUE);
    }
 
@@ -1175,9 +1175,9 @@ port_INLINE void activity_ti5(PORT_RADIOTIMER_WIDTH capturedTime) {
    ieee154e_vars.lastCapturedTime = capturedTime;
 
    // decides whether to listen for an ACK
-   if ((!schedule_getTrackID()) && packetfunctions_isBroadcastMulticast(&ieee154e_vars.dataToSend->l2_nextORpreviousHop)) {
+   if ((!schedule_getBier()) && packetfunctions_isBroadcastMulticast(&ieee154e_vars.dataToSend->l2_nextORpreviousHop)) {
       listenForAck = FALSE;
-   } else if (schedule_getTrackID() && schedule_isLastSlotOfBundle()) {
+   } else if (schedule_getBier() && schedule_isLastSlotOfBundle()) {
 	  listenForAck = FALSE;
    } else {
       listenForAck = TRUE;
@@ -1193,7 +1193,7 @@ port_INLINE void activity_ti5(PORT_RADIOTIMER_WIDTH capturedTime) {
       notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
 	  // if needed set the bier index back to 1
 	  if(ieee154e_vars.wasBitReset){
-	 	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+	 	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBundleID());
 	 	  ieee154e_vars.wasBitReset = FALSE;
 	  }
       // reset local variable
@@ -1266,7 +1266,7 @@ port_INLINE void activity_tie5() {
    }
    // if needed set the bier index back to 1
    if(ieee154e_vars.wasBitReset){
-	   bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+	   bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBundleID());
 	   ieee154e_vars.wasBitReset = FALSE;
    }
    
@@ -1410,14 +1410,14 @@ port_INLINE void activity_ti9(PORT_RADIOTIMER_WIDTH capturedTime) {
       
       if (schedule_getTrackID()) {
           // remember transmission succeeded
-          schedule_setBierDoNotSend(schedule_getTrackID(), schedule_getBitIndex(), schedule_getType());
+          schedule_setBierDoNotSend(schedule_getTrackID(), schedule_getBundleID(), schedule_getType());
       }
       // inform upper layer
       notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
 
 	  // if needed set the bier index back to 1
 	  if(ieee154e_vars.wasBitReset){
-	 	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+	 	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBundleID());
 	 	  ieee154e_vars.wasBitReset = FALSE;
 	  }
       ieee154e_vars.dataToSend = NULL;
@@ -2369,7 +2369,7 @@ void endSlot() {
       
 	  // if needed set the bier index back to 1
 	  if(ieee154e_vars.wasBitReset){
-	 	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBitIndex());
+	 	  bier_macSetBit(ieee154e_vars.dataToSend, schedule_getBundleID());
 	 	  ieee154e_vars.wasBitReset = FALSE;
 	  }
       // reset local variable
