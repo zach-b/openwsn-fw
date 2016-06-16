@@ -1298,7 +1298,7 @@ uint8_t sixtop_getCelllist(
     currentEntry   = scheduleWalker;
     do {
        // add to cellList only if it is not a BIER slot
-       if(!scheduleWalker->trackID && packetfunctions_sameAddress(&(scheduleWalker->neighbor),neighbor)){
+       if(!scheduleWalker->bier && packetfunctions_sameAddress(&(scheduleWalker->neighbor),neighbor)){
            cellList[i].tsNum        = scheduleWalker->slotOffset;
            cellList[i].choffset     = scheduleWalker->channelOffset;
            cellList[i].linkoptions  = scheduleWalker->type;
@@ -1400,7 +1400,8 @@ void sixtop_addCellsByState(
                   cellList[i].choffset,
                   &temp_neighbor,
 				  0,
-				  0
+				  0,
+				  FALSE
                );
                
                break;
@@ -1414,7 +1415,8 @@ void sixtop_addCellsByState(
                   cellList[i].choffset,
                   &temp_neighbor,
 				  0,
-				  0
+				  0,
+				  FALSE
                );
                break;
             default:
