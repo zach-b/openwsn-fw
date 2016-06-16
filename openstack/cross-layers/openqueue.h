@@ -47,8 +47,8 @@ OpenQueueEntry_t*  openqueue_bierGetReceivedPacket(void);
 OpenQueueEntry_t*  openqueue_bierGetPacketToSendUp(void);
 OpenQueueEntry_t*  openqueue_bierGetDataPacketTrack(uint8_t trackID);
 // called by IEEE80215E
-OpenQueueEntry_t*  openqueue_macGetDataPacketTrack(uint8_t trackID);
-OpenQueueEntry_t*  openqueue_macGetDataPacket(open_addr_t* toNeighbor);
+OpenQueueEntry_t*  openqueue_macGetDataPacketBier(uint8_t trackID);
+OpenQueueEntry_t*  openqueue_macGetDataPacket(uint8_t trackID, open_addr_t* toNeighbor);
 OpenQueueEntry_t*  openqueue_macGetEBPacket(void);
 
 /**

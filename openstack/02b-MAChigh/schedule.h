@@ -102,7 +102,8 @@ typedef struct {
    uint8_t         numTxACK;
    asn_t           lastUsedAsn;
    uint8_t         trackID;
-   uint16_t		   bitIndex;
+   uint16_t		   bundleID;        // if we are in a bier track bundleID should be the bitindex.
+   bool            bier;
    bool			   bierDoNotSend;
    void*           next;
 } scheduleEntry_t;
@@ -163,7 +164,8 @@ owerror_t          schedule_addActiveSlot(
    uint8_t              channelOffset,
    open_addr_t*         neighbor,
    uint8_t				trackID,
-   uint16_t				bitIndex
+   uint16_t				bitIndex,
+   bool                 bier
 );
 
 void               schedule_getSlotInfo(
@@ -203,7 +205,8 @@ cellType_t         schedule_getType(void);
 void               schedule_getNeighbor(open_addr_t* addrToWrite);
 channelOffset_t    schedule_getChannelOffset(void);
 uint8_t 		   schedule_getTrackID(void);
-uint16_t		   schedule_getBitIndex(void);
+uint16_t		   schedule_getBundleID(void);
+bool               schedule_getBier(void);
 bool 			   schedule_getBierDoNotSend(void);
 void			   schedule_setBierDoNotSend(uint8_t trackID, uint16_t bitIndex, cellType_t type);
 void			   schedule_resetBierDoNotSend(void);
