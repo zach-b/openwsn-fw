@@ -256,6 +256,9 @@ OpenQueueEntry_t* openqueue_bierGetDataPacketTrack(uint8_t trackID) {
 
 OpenQueueEntry_t* openqueue_macGetDataPacket(uint8_t trackID, open_addr_t* toNeighbor) {
    uint8_t i;
+   if(trackID==2){
+   	 openserial_printInfo(COMPONENT_OPENQUEUE, ERR_6LOWPAN_UNSUPPORTED, openqueue_vars.queue[i].l2_trackID, trackID);
+   }
    INTERRUPT_DECLARATION();
    DISABLE_INTERRUPTS();
    if (toNeighbor->type==ADDR_64B) {
@@ -272,7 +275,6 @@ OpenQueueEntry_t* openqueue_macGetDataPacket(uint8_t trackID, open_addr_t* toNei
       // anycast case: look for a packet which is either not created by RES
       // or an KA (created by RES, but not broadcast)
       for (i=0;i<QUEUELENGTH;i++) {
-     	 openserial_printInfo(COMPONENT_OPENQUEUE, ERR_6LOWPAN_UNSUPPORTED, openqueue_vars.queue[i].l2_trackID, trackID);
          if (openqueue_vars.queue[i].owner==COMPONENT_SIXTOP_TO_IEEE802154E &&
         	 openqueue_vars.queue[i].l2_trackID==trackID &&
              ( openqueue_vars.queue[i].creator!=COMPONENT_SIXTOP ||
