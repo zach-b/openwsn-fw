@@ -493,6 +493,7 @@ void openserial_scheduleCommands(void){
    openserial_getInputBuffer(input_buffer,numDataBytes);
    memset(&temp_neighbor,0,sizeof(temp_neighbor));
    memset(&temp_slotinfo,0,sizeof(temp_slotinfo));
+   temp_neighbor.type = ADDR_ANYCAST;
    //  slotFrame  & operationId
    targetSlotFrame = input_buffer[offset++];
    operationId = input_buffer[offset++];
