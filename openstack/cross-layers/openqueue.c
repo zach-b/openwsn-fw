@@ -272,7 +272,7 @@ OpenQueueEntry_t* openqueue_macGetDataPacket(uint8_t trackID, open_addr_t* toNei
       // anycast case: look for a packet which is either not created by RES
       // or an KA (created by RES, but not broadcast)
       for (i=0;i<QUEUELENGTH;i++) {
-     	 openserial_printInfo(COMPONENT_OPENQUEUE, ERR_BIER_DIFFERENT_MSG, openqueue_vars.queue[i].l2_trackID, trackID)
+     	 openserial_printInfo(COMPONENT_OPENQUEUE, ERR_BIER_DIFFERENT_MSG, openqueue_vars.queue[i].l2_trackID, trackID);
          if (openqueue_vars.queue[i].owner==COMPONENT_SIXTOP_TO_IEEE802154E &&
         	 openqueue_vars.queue[i].l2_trackID==trackID &&
              ( openqueue_vars.queue[i].creator!=COMPONENT_SIXTOP ||
