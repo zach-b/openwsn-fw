@@ -50,6 +50,8 @@ void openbridge_triggerData() {
       //l2
       pkt->l2_nextORpreviousHop.type = ADDR_64B;
       memcpy(&(pkt->l2_nextORpreviousHop.addr_64b[0]),&(input_buffer[0]),8);
+      // send packets from openbridge to track 2 instead of 0
+      pkt->l2_trackID = 2;
       //payload
       packetfunctions_reserveHeaderSize(pkt,numDataBytes-8);
       memcpy(pkt->payload,&(input_buffer[8]),numDataBytes-8);
