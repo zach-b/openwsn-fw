@@ -962,7 +962,7 @@ port_INLINE void activity_ti1ORri1() {
         		 if(bier_macIsBitSet(ieee154e_vars.dataToSend, schedule_getBundleID())){
         			 bier_macResetBit(ieee154e_vars.dataToSend, schedule_getBundleID());
         			 ieee154e_vars.wasBitReset = TRUE;
-        			 //openserial_printInfo(COMPONENT_IEEE802154E, ERR_BIER_FORWARDED, (errorparameter_t)*(ieee154e_vars.dataToSend->l2_bierBitmap), (errorparameter_t)*(ieee154e_vars.dataToSend->l2_bierBitmap+1));
+        			 openserial_printInfo(COMPONENT_IEEE802154E, ERR_BIER_FORWARDED, (errorparameter_t)*(ieee154e_vars.dataToSend->l2_bierBitmap), (errorparameter_t)*(ieee154e_vars.dataToSend->l2_bierBitmap+1));
         		 } else{
         			 ieee154e_vars.dataToSend=NULL;
         			 endSlot();
