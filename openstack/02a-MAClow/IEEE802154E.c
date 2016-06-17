@@ -949,6 +949,9 @@ port_INLINE void activity_ti1ORri1() {
         	}
          }
          if (ieee154e_vars.dataToSend==NULL) {
+        	 if(schedule_getTrackID()==2){
+        	                 openserial_printInfo(COMPONENT_OPENQUEUE, ERR_6LOWPAN_UNSUPPORTED, 3, 3);
+        	             }
         	 if (cellType==CELLTYPE_TX) {
         		 // abort
         		 endSlot();
@@ -959,6 +962,9 @@ port_INLINE void activity_ti1ORri1() {
          } else {
         	 // in BIER mode, check if the bit is set, if so reset it, else endslot
         	 if(schedule_getBier()){
+            	 if(schedule_getTrackID()==2){
+            	                 openserial_printInfo(COMPONENT_OPENQUEUE, ERR_6LOWPAN_UNSUPPORTED, 4, 4);
+            	             }
         		 if(bier_macIsBitSet(ieee154e_vars.dataToSend, schedule_getBundleID())){
         			 bier_macResetBit(ieee154e_vars.dataToSend, schedule_getBundleID());
         			 ieee154e_vars.wasBitReset = TRUE;
