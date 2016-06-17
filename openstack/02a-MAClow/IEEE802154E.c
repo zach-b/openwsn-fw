@@ -972,7 +972,7 @@ port_INLINE void activity_ti1ORri1() {
         	 // change state
         	 changeState(S_TXDATAOFFSET);
         	 // change owner
-        	 if(trackID==2){
+        	 if(schedule_getTrackID()==2){
         	                 openserial_printInfo(COMPONENT_OPENQUEUE, ERR_6LOWPAN_UNSUPPORTED, 5, 5);
         	             }
         	 ieee154e_vars.dataToSend->owner = COMPONENT_IEEE802154E;
