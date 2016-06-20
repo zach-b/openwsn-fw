@@ -281,9 +281,6 @@ OpenQueueEntry_t* openqueue_macGetDataPacket(uint8_t trackID, open_addr_t* toNei
                 )
              )
             ) {
-            if(trackID==2){
-                openserial_printInfo(COMPONENT_OPENQUEUE, ERR_6LOWPAN_UNSUPPORTED, openqueue_vars.queue[i].l2_trackID, trackID);
-            }
             ENABLE_INTERRUPTS();
             return &openqueue_vars.queue[i];
          }
