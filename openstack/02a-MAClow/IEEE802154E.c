@@ -1258,7 +1258,7 @@ port_INLINE void activity_tie5() {
       notif_sendDone(ieee154e_vars.dataToSend,E_FAIL);
    } else {
       // return packet to the virtual COMPONENT_SIXTOP_TO_IEEE802154E or COMPONENT_BIER_TO_IEEE802154E component
-	  if(schedule_getTrackID()){
+	  if(schedule_getBier()){
 		   ieee154e_vars.dataToSend->owner = COMPONENT_BIER_TO_IEEE802154E;
 	  } else{
 		  ieee154e_vars.dataToSend->owner = COMPONENT_SIXTOP_TO_IEEE802154E;
@@ -1408,7 +1408,7 @@ port_INLINE void activity_ti9(PORT_RADIOTIMER_WIDTH capturedTime) {
       // inform schedule of successful transmission
       schedule_indicateTx(&ieee154e_vars.asn,TRUE);
       
-      if (schedule_getTrackID()) {
+      if (schedule_getBier()) {
           // remember transmission succeeded
           schedule_setBierDoNotSend(schedule_getTrackID(), schedule_getBundleID(), schedule_getType());
       }
@@ -2164,7 +2164,7 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, owerror_t error) {
    memcpy(&packetSent->l2_asn,&ieee154e_vars.asn,sizeof(asn_t));
    // associate this packet with the virtual component
    // check whether we are on a BIER slot
-   if(schedule_getTrackID()){
+   if(schedule_getBier()){
 	   // Put the packet back in the sending queue, sendDone will be handled at the end of the timeFrame.
 	   packetSent->owner              = COMPONENT_BIER_TO_IEEE802154E;
    }else{
@@ -2184,7 +2184,7 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
    schedule_indicateRx(&packetReceived->l2_asn);
    // associate this packet with the virtual component
    // check whether we are on a BIER slot
-   if(schedule_getTrackID()){
+   if(schedule_getBier()){
 	   // COMPONENT_IEEE802154E_TO_BIER so bier can knows it's for it
 	   packetReceived->owner          = COMPONENT_IEEE802154E_TO_BIER;
 	   // post RES's Receive task (if we are on last slot we'll let it be called by the endslot() function)
@@ -2346,7 +2346,7 @@ void endSlot() {
       // if everything went well, dataToSend was set to NULL in ti9
       // getting here means transmit failed
 
-	  if (schedule_getTrackID()) {
+	  if (schedule_getBier()) {
  		  // return packet to the virtual COMPONENT_BIER_TO_IEEE802154E component
  		  ieee154e_vars.dataToSend->owner = COMPONENT_BIER_TO_IEEE802154E;
 	  }
@@ -2355,7 +2355,7 @@ void endSlot() {
       schedule_indicateTx(&ieee154e_vars.asn,FALSE);
       
       //decrement transmits left counter (except if we are in a bier bundle)
-      if (!schedule_getTrackID()){
+      if (!schedule_getBier()){
     	  ieee154e_vars.dataToSend->l2_retriesLeft--;
 
     	  if (ieee154e_vars.dataToSend->l2_retriesLeft==0) {
