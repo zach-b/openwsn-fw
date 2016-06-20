@@ -479,7 +479,7 @@ void openserial_scheduleCommands(void){
    uint8_t             trackID;
    uint8_t             rxCellNum;
    uint8_t             txCEllNum;
-   bool                bier;
+   uint8_t             bier;
    open_addr_t         temp_neighbor;
    slotinfo_element_t  temp_slotinfo;
    slotOffset_t        slotOffset;
