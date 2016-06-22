@@ -255,6 +255,8 @@ typedef struct {
    uint16_t                  slotDuration;            // 
 
    bool                      wasBitReset;			  // BIER : set to TRUE when bit is reset so I can remember to set it back in endslot()
+   bool                      receivedTrackOne;
+   bool                      receivedTrackTwo;
 } ieee154e_vars_t;
 
 BEGIN_PACK
