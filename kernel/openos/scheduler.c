@@ -76,7 +76,7 @@ void scheduler_start() {
    
       // we can not print from within the kernel. Instead:
       // blink the error LED
-      leds_error_blink();
+      //leds_error_blink();
       // reset the board
       board_reset();
    }

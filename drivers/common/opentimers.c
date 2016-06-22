@@ -101,7 +101,7 @@ opentimer_id_t opentimers_start(uint32_t duration, timer_type_t type, time_type_
    
             // we can not print from within the drivers. Instead:
             // blink the error LED
-            leds_error_blink();
+            //leds_error_blink();
             // reset the board
             board_reset();
          }
@@ -150,7 +150,7 @@ void  opentimers_setPeriod(opentimer_id_t id,time_type_t timetype,uint32_t newDu
       
       // we can not print from within the drivers. Instead:
       // blink the error LED
-      leds_error_blink();
+      //leds_error_blink();
       // reset the board
       board_reset();
    }
