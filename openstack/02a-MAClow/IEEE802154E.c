@@ -930,7 +930,7 @@ port_INLINE void activity_ti1ORri1() {
          ieee154e_vars.dataToSend = NULL;
          // check whether we can send
          if (schedule_getOkToSend()) {
-        	// check if this slot is in a BIER bundle (trackID != 0)
+        	// check if this slot is in a BIER bundle
         	if(schedule_getBier() && cellType==CELLTYPE_TX){
         		if(schedule_getBierDoNotSend()){
             		// Sending already worked, go to sleep
@@ -1598,6 +1598,12 @@ port_INLINE void activity_ri5(PORT_RADIOTIMER_WIDTH capturedTime) {
 
       // store schedule infos
       ieee154e_vars.dataReceived->l2_trackID = schedule_getTrackID();
+      if(schedule_getTrackID()==1){
+    	  ieee154e_vars.receivedTrackOne = TRUE;
+      }
+      else if (schedule_getTrackID()==2){
+    	  ieee154e_vars.receivedTrackTwo = TRUE;
+      }
 
       // if security is enabled, decrypt/authenticate the frame.
       if (ieee154e_vars.dataReceived->l2_securityLevel != IEEE154_ASH_SLF_TYPE_NOSEC) {
@@ -2409,6 +2415,21 @@ void endSlot() {
 		   task_bierNotifReceive();
 	   }
        bier_notifEndOfSlotFrame();
+
+       // leds for the demo
+       if(ieee154e_vars.receivedTrackOne){
+    	   leds_radio_on();
+    	   ieee154e_vars.receivedTrackOne = FALSE;
+       }else{
+    	   leds_radio_off();
+       }
+       if(ieee154e_vars.receivedTrackTwo){
+    	   leds_error_on();
+    	   ieee154e_vars.receivedTrackTwo = FALSE;
+       }else{
+    	   leds_error_off();
+       }
+
    }
 
    
