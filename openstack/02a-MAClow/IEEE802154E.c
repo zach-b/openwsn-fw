@@ -982,6 +982,12 @@ port_INLINE void activity_ti1ORri1() {
         	 }
         	 // record that I attempt to transmit this packet
         	 ieee154e_vars.dataToSend->l2_numTxAttempts++;
+             if(schedule_getTrackID()==1){
+           	  ieee154e_vars.receivedTrackOne = TRUE;
+             }
+             else if (schedule_getTrackID()==2){
+           	  ieee154e_vars.receivedTrackTwo = TRUE;
+             }
         	 // arm tt1
         	 radiotimer_schedule(DURATION_tt1);
         	 break;
@@ -1598,12 +1604,6 @@ port_INLINE void activity_ri5(PORT_RADIOTIMER_WIDTH capturedTime) {
 
       // store schedule infos
       ieee154e_vars.dataReceived->l2_trackID = schedule_getTrackID();
-      if(schedule_getTrackID()==1){
-    	  ieee154e_vars.receivedTrackOne = TRUE;
-      }
-      else if (schedule_getTrackID()==2){
-    	  ieee154e_vars.receivedTrackTwo = TRUE;
-      }
 
       // if security is enabled, decrypt/authenticate the frame.
       if (ieee154e_vars.dataReceived->l2_securityLevel != IEEE154_ASH_SLF_TYPE_NOSEC) {
