@@ -1605,6 +1605,15 @@ port_INLINE void activity_ri5(PORT_RADIOTIMER_WIDTH capturedTime) {
       // store schedule infos
       ieee154e_vars.dataReceived->l2_trackID = schedule_getTrackID();
 
+      // dirty fix to get the leds_demo work on the last mote
+      if(idmanager_getMyID(ADDR_64B)->addr_64b[7]==0x36){
+    	  if(schedule_getTrackID()==1){
+        	  ieee154e_vars.sentOnTrackOne = TRUE;
+    	  } else if (schedule_getTrackID()==2){
+        	  ieee154e_vars.sentOnTrackTwo = TRUE;
+    	  }
+      }
+
       // if security is enabled, decrypt/authenticate the frame.
       if (ieee154e_vars.dataReceived->l2_securityLevel != IEEE154_ASH_SLF_TYPE_NOSEC) {
          if (IEEE802154_SECURITY.incomingFrame(ieee154e_vars.dataReceived) != E_SUCCESS) {
