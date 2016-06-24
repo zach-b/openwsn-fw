@@ -118,6 +118,9 @@ void openudp_receive(OpenQueueEntry_t* msg) {
          uinject_receive(msg);
          break;
       case 1009 :
+    	  if(msg->l2_trackID == 2){
+    	  	  openserial_printInfo(COMPONENT_OPENUDP, ERR_RCVD_ECHO_REPLY, 42, 42);
+    	  }
     	  openqueue_freePacketBuffer(msg);
     	  break;
       default:
