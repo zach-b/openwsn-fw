@@ -983,10 +983,10 @@ port_INLINE void activity_ti1ORri1() {
         	 // record that I attempt to transmit this packet
         	 ieee154e_vars.dataToSend->l2_numTxAttempts++;
              if(schedule_getTrackID()==1){
-           	  ieee154e_vars.receivedTrackOne = TRUE;
+           	  ieee154e_vars.sentOnTrackOne = TRUE;
              }
              else if (schedule_getTrackID()==2){
-           	  ieee154e_vars.receivedTrackTwo = TRUE;
+           	  ieee154e_vars.sentOnTrackTwo = TRUE;
              }
         	 // arm tt1
         	 radiotimer_schedule(DURATION_tt1);
@@ -2417,15 +2417,15 @@ void endSlot() {
        bier_notifEndOfSlotFrame();
 
        // leds for the demo
-       if(ieee154e_vars.receivedTrackOne){
+       if(ieee154e_vars.sentOnTrackOne){
     	   leds_radio_on();
-    	   ieee154e_vars.receivedTrackOne = FALSE;
+    	   ieee154e_vars.sentOnTrackOne = FALSE;
        }else{
     	   leds_radio_off();
        }
-       if(ieee154e_vars.receivedTrackTwo){
+       if(ieee154e_vars.sentOnTrackTwo){
     	   leds_error_on();
-    	   ieee154e_vars.receivedTrackTwo = FALSE;
+    	   ieee154e_vars.sentOnTrackTwo = FALSE;
        }else{
     	   leds_error_off();
        }
