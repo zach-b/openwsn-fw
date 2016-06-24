@@ -57,7 +57,7 @@ void schedule_init() {
 		 FALSE                                  // bier
       );
    }
-   for (running_slotOffset=18;running_slotOffset<start_slotOffset+NUMSERIALRX;running_slotOffset++) {
+   for (running_slotOffset=18;running_slotOffset<18+NUMSERIALRX;running_slotOffset++) {
          schedule_addActiveSlot(
             running_slotOffset,                    // slot offset
             CELLTYPE_SERIALRX,                     // type of slot
