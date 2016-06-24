@@ -154,6 +154,23 @@ void openqueue_removeAllOwnedBy(uint8_t owner) {
    ENABLE_INTERRUPTS();
 }
 
+/**
+\brief Free all the packet buffers belonging to a specific track.
+
+\param trackID The identifier of the track.
+*/
+void openqueue_removeAllOnTrack(uint8_t trackID) {
+   uint8_t i;
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+   for (i=0;i<QUEUELENGTH;i++){
+      if (openqueue_vars.queue[i].l2_trackID==trackID) {
+         openqueue_reset_entry(&(openqueue_vars.queue[i]));
+      }
+   }
+   ENABLE_INTERRUPTS();
+}
+
 
 
 //======= called by RES
