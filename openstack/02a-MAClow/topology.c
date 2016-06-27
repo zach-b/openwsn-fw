@@ -57,7 +57,7 @@ bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
  *     f6----d8----4a
  *    / |     |    | \
  *   /  |     |    |  \
- * 36   |     |    |   d9
+ * c3   |     |    |   d9
  *   \  |     |    |  /
  *    \ |     |    | /
  *     ec----c7----02
@@ -114,7 +114,7 @@ bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
          if (
                ieee802514_header->src.addr_64b[7]==0xd8 ||
                ieee802514_header->src.addr_64b[7]==0xec ||
-			   ieee802514_header->src.addr_64b[7]==0x36
+			   ieee802514_header->src.addr_64b[7]==0xc3
             ) {
             returnVal=TRUE;
          }
@@ -123,12 +123,12 @@ bool topology_isAcceptablePacket(ieee802154_header_iht* ieee802514_header) {
          if (
                ieee802514_header->src.addr_64b[7]==0xc7 ||
                ieee802514_header->src.addr_64b[7]==0xf6 ||
-			   ieee802514_header->src.addr_64b[7]==0x36
+			   ieee802514_header->src.addr_64b[7]==0xc3
             ) {
             returnVal=TRUE;
          }
          break;
-      case 0x36:
+      case 0xc3:
          if (
                ieee802514_header->src.addr_64b[7]==0xf6 ||
                ieee802514_header->src.addr_64b[7]==0xec
