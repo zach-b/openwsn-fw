@@ -83,7 +83,7 @@ void bier_notifEndOfSlotFrame() {
 		// print difference with previous ASN if different from slotframe size:
 		if(bier_asnDiff(&bier_vars.last_asn, &msg->l2_asn) != (uint16_t)schedule_getFrameLength()){
 			openserial_printInfo(COMPONENT_BIER,
-					ERR_UNSUPPORTED_PORT_NUMBER,
+					ERR_TEST_SLOTSSINCELASTPACKET,
 					(errorparameter_t)bier_asnDiff(&bier_vars.last_asn, &msg->l2_asn),
 					(errorparameter_t)1009);
 		}
