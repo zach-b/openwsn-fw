@@ -421,7 +421,7 @@ void task_sixtopNotifSendDone() {
    // get recently-sent packet from openqueue
    msg = openqueue_sixtopGetSentPacket();
    if (msg==NULL) {
-      openserial_printCritical(
+      openserial_printError(
          COMPONENT_SIXTOP,
          ERR_NO_SENT_PACKET,
          (errorparameter_t)0,
@@ -494,7 +494,7 @@ void task_sixtopNotifReceive() {
     // get received packet from openqueue
     msg = openqueue_sixtopGetReceivedPacket();
     if (msg==NULL) {
-        openserial_printCritical(
+        openserial_printError(
             COMPONENT_SIXTOP,
             ERR_NO_RECEIVED_PACKET,
             (errorparameter_t)0,
