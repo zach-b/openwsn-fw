@@ -262,6 +262,10 @@ enum {
    ERR_SCHEDULE_LENGTHCHANGED          = 0x45, // slotframe length change
    // control ack
    ACK_SCHEDULE_LIST                   = 0x50, // reply acitve cells list
+
+   // Testbed
+   ERR_TEST_SLOTSSINCELASTPACKET       = 0x51, // if there is more that 1 slotframe between two beer packets
+   ERR_TEST_RCVD_MSG                   = 0x52  // received a message from track 2
 };
 
 //=========================== typedef =========================================

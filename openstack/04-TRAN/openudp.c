@@ -58,6 +58,9 @@ void openudp_sendDone(OpenQueueEntry_t* msg, owerror_t error) {
 
 void openudp_receive(OpenQueueEntry_t* msg) {
    uint8_t temp_8b;
+   frameLength_t frameLength;
+   uint32_t slotOffset;
+
       
    msg->owner                      = COMPONENT_OPENUDP;
    if (msg->l4_protocol_compressed==TRUE) {
@@ -118,8 +121,19 @@ void openudp_receive(OpenQueueEntry_t* msg) {
          uinject_receive(msg);
          break;
       case 1009 :
+    	  msg->l2_asn
     	  if(msg->l2_trackID == 2){
-    	  	  openserial_printInfo(COMPONENT_OPENUDP, ERR_RCVD_ECHO_REPLY, 42, 42);
+    		   frameLength = schedule_getFrameLength();
+    		   // determine the slotOffset
+    		   slotOffset = msg->l2_asn.byte4;
+    		   slotOffset = slotOffset % frameLength;
+    		   slotOffset = slotOffset << 16;
+    		   slotOffset = slotOffset + msg->l2_asn.bytes2and3;
+    		   slotOffset = slotOffset % frameLength;
+    		   slotOffset = slotOffset << 16;
+    		   slotOffset = slotOffset + msg->l2_asn.bytes0and1;
+    		   slotOffset = slotOffset % frameLength;
+    	  	  openserial_printInfo(COMPONENT_OPENUDP, ERR_TEST_RCVD_MSG, (errorparameter_t)slotOffset, 42);
     	  }
     	  openqueue_freePacketBuffer(msg);
     	  break;
