@@ -121,7 +121,6 @@ void openudp_receive(OpenQueueEntry_t* msg) {
          uinject_receive(msg);
          break;
       case 1009 :
-    	  msg->l2_asn
     	  if(msg->l2_trackID == 2){
     		   frameLength = schedule_getFrameLength();
     		   // determine the slotOffset
