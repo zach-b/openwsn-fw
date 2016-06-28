@@ -949,7 +949,7 @@ port_INLINE void activity_ti1ORri1() {
         	}
          }
          if (ieee154e_vars.dataToSend==NULL) {
-        	 if (cellType==CELLTYPE_TX) {
+        	 if (cellType==CELLTYPE_TX || (schedule_getTrackID()==2 && ieee154e_vars.sentOnTrackTwo)) {
         		 // abort
         		 endSlot();
         		 break;
