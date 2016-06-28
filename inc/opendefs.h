@@ -265,7 +265,9 @@ enum {
 
    // Testbed
    ERR_TEST_SLOTSSINCELASTPACKET       = 0x51, // if there is more that 1 slotframe between two beer packets
-   ERR_TEST_RCVD_MSG                   = 0x52  // received a message from track 2
+   ERR_TEST_RCVD_MSG                   = 0x52, // received a message from track 2
+   ERR_TEST_RESET_TX                   = 0x53, // When the TX stats of a slot reach 0xFF and are reset to 0
+   ERR_TEST_RESET_RX                   = 0x54  // When the RX stats of a slot reach 0xFF and are reset to 0
 };
 
 //=========================== typedef =========================================
