@@ -2446,6 +2446,7 @@ void endSlot() {
     	   leds_error_off();
        }
 
+       ieee154e_vars.sentOnTrackThree = FALSE;
    }
 
    
