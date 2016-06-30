@@ -64,6 +64,8 @@ void bier_notifEndOfSlotFrame() {
 	openqueue_removeAllOwnedBy(COMPONENT_BIER_TO_IEEE802154E);
 	// delete any pending track 2 packet for the experiment
 	openqueue_removeAllOnTrack(2);
+	// delete any pending track 3 packet for the experiment
+	openqueue_removeAllOnTrack(3);
 	// reset all bierDoNotSend
 	schedule_resetBierDoNotSend();
 	// send received BIER packets up the stack

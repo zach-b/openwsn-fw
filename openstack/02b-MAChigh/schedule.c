@@ -385,12 +385,12 @@ void schedule_init() {
 		break;
 	}
 
-	// track 2 and 3 shared slots :
+	// track 2 and 3 slots :
 	for (running_slotOffset=22;running_slotOffset<42;running_slotOffset++) {
 		schedule_addActiveSlot(
 				running_slotOffset,                    // slot offset
 				CELLTYPE_TXRX,                     // type of slot
-				TRUE,                                 // shared?
+				FALSE,                                 // shared?
 				0,                                     // channel offset
 				&temp_neighbor,                        // neighbor
 				2,										// trackID
@@ -402,7 +402,7 @@ void schedule_init() {
 		schedule_addActiveSlot(
 				running_slotOffset,                    // slot offset
 				CELLTYPE_TXRX,                     // type of slot
-				TRUE,                                 // shared?
+				FALSE,                                 // shared?
 				0,                                     // channel offset
 				&temp_neighbor,                        // neighbor
 				3,										// trackID
