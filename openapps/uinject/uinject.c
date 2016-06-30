@@ -36,6 +36,7 @@ void uinject_init() {
       TIMER_PERIODIC,TIME_TICS,
       uinject_timer_cb
    );
+   openserial_printInfo(COMPONENT_UINJECT, 42, 42, 42);
 }
 
 void uinject_sendDone(OpenQueueEntry_t* msg, owerror_t error) {
@@ -61,7 +62,7 @@ void uinject_receive(OpenQueueEntry_t* pkt) {
    task to scheduler with CoAP priority, and let scheduler take care of it.
 */
 void uinject_timer_cb(opentimer_id_t id){
-   
+   openserial_printInfo(COMPONENT_UINJECT, 43, 43, 43);
    scheduler_push_task(uinject_task_cb,TASKPRIO_COAP);
 }
 
@@ -74,10 +75,12 @@ void uinject_task_cb() {
    
    // don't run on dagroot
    if (idmanager_getMyID(ADDR_64B)->addr_64b[7]!=0xc3) {
+	  openserial_printInfo(COMPONENT_UINJECT, 44, 44, 44);
       opentimers_stop(uinject_vars.timerId);
       return;
    }
-   
+   openserial_printInfo(COMPONENT_UINJECT, 45, 45, 45);
+
    // if you get here, send a packet
    
    // get a free packet buffer
