@@ -630,7 +630,7 @@ owerror_t sixtop_send_internal(
 
    // assign a number of retries
    // for track 2 messages, set an arbitrary high number of retries (packets will be dropped at the end of the slotframe)
-   if(msg->l2_trackID==2){
+   if(msg->l2_trackID==2 || msg->l2_trackID==3){
 	   msg->l2_retriesLeft = 100;
    }
    else if (
