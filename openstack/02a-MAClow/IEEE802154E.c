@@ -949,7 +949,7 @@ port_INLINE void activity_ti1ORri1() {
         	}
          }
          if (ieee154e_vars.dataToSend==NULL) {
-        	 if (cellType==CELLTYPE_TX || (schedule_getTrackID()>=2 && ieee154e_vars.sentOnTrackTwo)) {
+        	 if (cellType==CELLTYPE_TX || (schedule_getTrackID()==2 && ieee154e_vars.sentOnTrackTwo) || (schedule_getTrackID()==3 && ieee154e_vars.sentOnTrackThree)) {
         		 // abort
         		 endSlot();
         		 break;
@@ -985,9 +985,13 @@ port_INLINE void activity_ti1ORri1() {
              if(schedule_getTrackID()==1){
            	  ieee154e_vars.sentOnTrackOne = TRUE;
              }
-             else if (schedule_getTrackID()>=2){
+             else if (schedule_getTrackID()==2){
            	  ieee154e_vars.sentOnTrackTwo = TRUE;
              }
+             else if (schedule_getTrackID()==3){
+            	 ieee154e_vars.sentOnTrackThree = TRUE;
+             }
+
         	 // arm tt1
         	 radiotimer_schedule(DURATION_tt1);
         	 break;
@@ -1609,9 +1613,12 @@ port_INLINE void activity_ri5(PORT_RADIOTIMER_WIDTH capturedTime) {
       if(idmanager_getMyID(ADDR_64B)->addr_64b[7]==0xc3){
     	  if(schedule_getTrackID()==1){
         	  ieee154e_vars.sentOnTrackOne = TRUE;
-    	  } else if (schedule_getTrackID()==2 || schedule_getTrackID()==3){
+    	  } else if (schedule_getTrackID()==2){
         	  ieee154e_vars.sentOnTrackTwo = TRUE;
+    	  } else if (schedule_getTrackID()==3){
+    		  ieee154e_vars.sentOnTrackThree = TRUE;
     	  }
+
       }
 
       // if security is enabled, decrypt/authenticate the frame.

@@ -257,6 +257,7 @@ typedef struct {
    bool                      wasBitReset;			  // BIER : set to TRUE when bit is reset so I can remember to set it back in endslot()
    bool                      sentOnTrackOne;
    bool                      sentOnTrackTwo;
+   bool                      sentOnTrackThree;
 } ieee154e_vars_t;
 
 BEGIN_PACK
