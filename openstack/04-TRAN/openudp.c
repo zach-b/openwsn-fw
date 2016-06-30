@@ -122,17 +122,29 @@ void openudp_receive(OpenQueueEntry_t* msg) {
          break;
       case 1009 :
     	  if(msg->l2_trackID == 2){
-    		   frameLength = schedule_getFrameLength();
-    		   // determine the slotOffset
-    		   slotOffset = msg->l2_asn.byte4;
-    		   slotOffset = slotOffset % frameLength;
-    		   slotOffset = slotOffset << 16;
-    		   slotOffset = slotOffset + msg->l2_asn.bytes2and3;
-    		   slotOffset = slotOffset % frameLength;
-    		   slotOffset = slotOffset << 16;
-    		   slotOffset = slotOffset + msg->l2_asn.bytes0and1;
-    		   slotOffset = slotOffset % frameLength;
-    	  	  openserial_printInfo(COMPONENT_OPENUDP, ERR_TEST_RCVD_MSG, (errorparameter_t)slotOffset, 42);
+    		  frameLength = schedule_getFrameLength();
+    		  // determine the slotOffset
+    		  slotOffset = msg->l2_asn.byte4;
+    		  slotOffset = slotOffset % frameLength;
+    		  slotOffset = slotOffset << 16;
+    		  slotOffset = slotOffset + msg->l2_asn.bytes2and3;
+    		  slotOffset = slotOffset % frameLength;
+    		  slotOffset = slotOffset << 16;
+    		  slotOffset = slotOffset + msg->l2_asn.bytes0and1;
+    		  slotOffset = slotOffset % frameLength;
+    	  	  openserial_printInfo(COMPONENT_OPENUDP, ERR_TEST_RCVD_MSG_2, (errorparameter_t)slotOffset, 42);
+    	  } else if (msg->l2_trackID == 3){
+    		  frameLength = schedule_getFrameLength();
+    		  // determine the slotOffset
+    		  slotOffset = msg->l2_asn.byte4;
+    		  slotOffset = slotOffset % frameLength;
+    		  slotOffset = slotOffset << 16;
+    		  slotOffset = slotOffset + msg->l2_asn.bytes2and3;
+    		  slotOffset = slotOffset % frameLength;
+    		  slotOffset = slotOffset << 16;
+    		  slotOffset = slotOffset + msg->l2_asn.bytes0and1;
+    		  slotOffset = slotOffset % frameLength;
+    		  openserial_printInfo(COMPONENT_OPENUDP, ERR_TEST_RCVD_MSG_3, (errorparameter_t)slotOffset, 42);
     	  }
     	  openqueue_freePacketBuffer(msg);
     	  break;
