@@ -15,7 +15,7 @@ uinject_vars_t uinject_vars;
 
 static const uint8_t uinject_dst_addr[]   = {
    0xbb, 0xbb, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
+   0x00, 0x12, 0x4b, 0x00, 0x06, 0x0d, 0x9e, 0xd9
 }; 
 
 //=========================== prototypes ======================================
@@ -32,8 +32,8 @@ void uinject_init() {
    
    // start periodic timer
    uinject_vars.timerId                    = opentimers_start(
-      UINJECT_PERIOD_MS,
-      TIMER_PERIODIC,TIME_MS,
+      UINJECT_PERIOD_TICS,
+      TIMER_PERIODIC,TIME_TICS,
       uinject_timer_cb
    );
 }
@@ -73,7 +73,7 @@ void uinject_task_cb() {
    if (ieee154e_isSynch() == FALSE) return;
    
    // don't run on dagroot
-   if (idmanager_getIsDAGroot()) {
+   if (idmanager_getMyID(ADDR_64B)->addr_64b[7]!=0xc3) {
       opentimers_stop(uinject_vars.timerId);
       return;
    }
@@ -94,6 +94,7 @@ void uinject_task_cb() {
    
    pkt->owner                         = COMPONENT_UINJECT;
    pkt->creator                       = COMPONENT_UINJECT;
+   pkt->l2_trackID                    = 2;
    pkt->l4_protocol                   = IANA_UDP;
    pkt->l4_destination_port           = WKP_UDP_INJECT;
    pkt->l4_sourcePortORicmpv6Type     = WKP_UDP_INJECT;
