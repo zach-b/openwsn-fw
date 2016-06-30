@@ -53,7 +53,7 @@ void openbridge_triggerData() {
       // send packets from openbridge to track 2 or 3 instead of 0 depending on next hop
       if(pkt->l2_nextORpreviousHop.addr_64b[7]==0x4a){
           pkt->l2_trackID = 2;
-      }else if(pkt->l2_nextORpreviousHop.addr_64b[7]==0x07){
+      }else if(pkt->l2_nextORpreviousHop.addr_64b[7]==0x02){
     	  pkt->l2_trackID = 3;
       }
       //payload
