@@ -1373,7 +1373,7 @@ void schedule_indicateRx(asn_t* asnTimestamp) {
    DISABLE_INTERRUPTS();
    
    // increment usage statistics
-   if (schedule_vars.currentScheduleEntry->numTx==0xFF) {
+   if (schedule_vars.currentScheduleEntry->numRx==0xFF) {
   	  openserial_printInfo(COMPONENT_SCHEDULE, ERR_TEST_RESET_RX, (errorparameter_t)schedule_vars.currentScheduleEntry->slotOffset, (errorparameter_t)schedule_vars.currentScheduleEntry->numRx);
    }
    schedule_vars.currentScheduleEntry->numRx++;
