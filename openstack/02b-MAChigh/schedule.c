@@ -72,7 +72,6 @@ void schedule_init() {
 				0,									  // bierbitindex
 				TRUE
 		);
-		break;
 		schedule_addActiveSlot(
 				11,                   // slot offset
 				CELLTYPE_TX,                  		  // type of slot
@@ -83,6 +82,7 @@ void schedule_init() {
 				0,									  // bierbitindex
 				TRUE
 		);
+		break;
 	case 0x4a :
 		schedule_addActiveSlot(
 				10,                   // slot offset
